@@ -1,2 +1,2 @@
 # TinyRayTracer
- A tiny ray tracer with CUDA
+ A tiny ray tracer with CUDA.
