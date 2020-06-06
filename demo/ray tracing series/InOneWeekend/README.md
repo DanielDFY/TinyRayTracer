@@ -4,4 +4,10 @@
 
 ![Chapter01](Chapter01/output.png)
 
-### Chapter 02 Refactoring with class `Vec3` and `Color`
+### Chapter 02 Refactoring code above with `Vec3` and `Color`
+
+![Chapter02](Chapter02/output.png)
+
+### Chapter 03 Rays, Simple Camera, Background
+
+![Chapter03](Chapter03/output.png)

@@ -9,12 +9,19 @@
 #include <device_launch_parameters.h>
 
 #include <Color.cuh>
+#include <Ray.cuh>
 
 #include <helperCuda.h>
 
 using namespace TinyRT;
 
-__global__ void render(Color* pixelBuffer, int imageWidth, int imageHeight) {
+__device__ Color rayColor(const Ray& r) {
+	const Vec3 unitDirection = unitVec3(r.direction());
+	const float t = 0.5f * (unitDirection.y() + 1.0f);
+	return (1.0f - t) * Color(1.0f, 1.0f, 1.0f) + t * Color(0.5f, 0.7f, 1.0f);
+}
+
+__global__ void render(Color* pixelBuffer, int imageWidth, int imageHeight, Vec3 lowerLeftCorner, Vec3 horizontal, Vec3 vertical, Vec3 origin) {
 	const int col = threadIdx.x + blockIdx.x * blockDim.x;
 	const int row = threadIdx.y + blockIdx.y * blockDim.y;
 	if (col >= imageWidth || row >= imageHeight)
@@ -22,16 +29,19 @@ __global__ void render(Color* pixelBuffer, int imageWidth, int imageHeight) {
 
 	const int idx = row * imageWidth + col;
 
-	pixelBuffer[idx] = Color(
-		static_cast<float>(row) / static_cast<float>(imageHeight - 1),
-		static_cast<float>(col) / static_cast<float>(imageWidth - 1),
-		0.25f);
+	auto u = static_cast<float>(col) / static_cast<float>(imageWidth - 1);
+	auto v = static_cast<float>(row) / static_cast<float>(imageHeight - 1);
+
+	Ray r(origin, lowerLeftCorner - origin + u * horizontal + v * vertical);
+
+	pixelBuffer[idx] = rayColor(r);
 }
 
 int main() {
 	/* image config */
+	constexpr float aspectRatio = 16.0f / 9.0f;
 	constexpr int imageWidth = 400;
-	constexpr int imageHeight = 250;
+	constexpr int imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
 	/* image output file */
 	const std::string fileName("output.png");
@@ -48,6 +58,16 @@ int main() {
 	Color* pixelBuffer;
 	checkCudaErrors(cudaMallocManaged(&pixelBuffer, pixelBufferBytes));
 
+	/* camera config */
+	constexpr float viewPortHeight = 2.0f;
+	constexpr float viewPortWidth = aspectRatio * viewPortHeight;
+	constexpr float focalLength = 1.0f;
+
+	const Point3 origin(0.0f, 0.0f, 0.0f);
+	const Vec3 horizontal(viewPortWidth, 0.0f, 0.0f);
+	const Vec3 vertical(0.0f, viewPortHeight, 0.0f);
+	const Point3 lowerLeftCorner = origin - horizontal / 2 - vertical / 2 + Vec3(0.0f, 0.0f, focalLength);
+
 	// start timer
 	const clock_t start = clock();
 
@@ -55,7 +75,7 @@ int main() {
 	dim3 threadDim(threadBlockWidth, threadBlockHeight);
 
 	// render the image into buffer
-	render<<<blockDim, threadDim>>>(pixelBuffer, imageWidth, imageHeight);
+	render<<<blockDim, threadDim >>>(pixelBuffer, imageWidth, imageHeight, lowerLeftCorner, horizontal, vertical, origin);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 

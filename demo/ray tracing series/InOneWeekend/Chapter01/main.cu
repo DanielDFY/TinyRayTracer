@@ -28,7 +28,7 @@ __global__ void render(float* pixelBuffer, int imageWidth, int imageHeight, int 
 int main() {
 	/* image config */
 	constexpr int imageWidth = 400;
-	constexpr int imageHeight = 300;
+	constexpr int imageHeight = 250;
 
 	/* image output file */
 	const std::string fileName("output.png");
@@ -45,11 +45,11 @@ int main() {
 	float* pixelBuffer;
 	checkCudaErrors(cudaMallocManaged(&pixelBuffer, pixelBufferBytes));
 
-	dim3 blockDim(imageWidth / threadBlockWidth + 1, imageHeight / threadBlockHeight + 1);
-	dim3 threadDim(threadBlockWidth, threadBlockHeight);
-
 	// start timer
 	const clock_t start = clock();
+
+	dim3 blockDim(imageWidth / threadBlockWidth + 1, imageHeight / threadBlockHeight + 1);
+	dim3 threadDim(threadBlockWidth, threadBlockHeight);
 	
 	// render the image into buffer
 	render<<<blockDim, threadDim>>>(pixelBuffer, imageWidth, imageHeight, channelNum);

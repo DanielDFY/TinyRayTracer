@@ -5,8 +5,9 @@
 namespace TinyRT {
 	class Color : public Vec3 {
 	public:
-		__host__ __device__ Color() : Vec3() {};
+		Color() = default;
 		__host__ __device__ Color(float e0, float e1, float e2) : Vec3(e0, e1, e2) {};
+		__host__ __device__ Color(Vec3 v) : Color(v.x(), v.y(), v.z()) {}
 
 		__host__ __device__ float r() const { return elem[0]; }
 		__host__ __device__ float g() const { return elem[1]; }

@@ -6,7 +6,7 @@
 namespace TinyRT {
 	class Vec3 {
 	public:
-		__host__ __device__ Vec3() : elem{0.0f, 0.0f, 0.0f} {};
+		Vec3() = default;
 		__host__ __device__ Vec3(float e0, float e1, float e2) : elem{ e0, e1, e2 } {}
 
 		__host__ __device__ float x() const { return elem[0]; }
@@ -43,43 +43,47 @@ namespace TinyRT {
 			return sqrt(lengthSquared());
 		}
 
-	public:
+	protected:
 		float elem[3];
 	};
 
 	// Utility functions
 	inline std::ostream& operator<<(std::ostream& out, const Vec3& v) {
-		return out << v.elem[0] << ' ' << v.elem[1] << ' ' << v.elem[2];
+		return out << v.x() << ' ' << v.y() << ' ' << v.z();
 	}
 
 	__host__ __device__ inline Vec3 operator+(const Vec3& lhs, const Vec3& rhs) {
-		return { lhs.elem[0] + rhs.elem[0], lhs.elem[1] + rhs.elem[1], lhs.elem[2] + rhs.elem[2] };
+		return { lhs.x() + rhs.x(), lhs.y() + rhs.y(), lhs.z() + rhs.z() };
 	}
 
 	__host__ __device__ inline Vec3 operator-(const Vec3& lhs, const Vec3& rhs) {
-		return { lhs.elem[0] - rhs.elem[0], lhs.elem[1] - rhs.elem[1], lhs.elem[2] - rhs.elem[2] };
+		return { lhs.x() - rhs.x(), lhs.y() - rhs.y(), lhs.z() - rhs.z() };
 	}
 
 	__host__ __device__ inline Vec3 operator*(const Vec3& lhs, const Vec3& rhs) {
-		return { lhs.elem[0] * rhs.elem[0], lhs.elem[1] * rhs.elem[1], lhs.elem[2] * rhs.elem[2] };
+		return { lhs.x() * rhs.x(), lhs.y() * rhs.y(), lhs.z() * rhs.z() };
+	}
+
+	__host__ __device__ inline Vec3 operator*(const float k, const Vec3& v) {
+		return { k * v.x(), k * v.y(), k * v.z() };
 	}
 
 	__host__ __device__ inline Vec3 operator*(const Vec3& v, const float k) {
-		return v * k;
+		return k * v;
 	}
 
 	__host__ __device__ inline Vec3 operator/(const Vec3& v, const float k) {
-		return v * (1 / k);
+		return (1 / k) * v;
 	}
 
 	__host__ __device__ inline float dot(const Vec3& lhs, const Vec3& rhs) {
-		return lhs.elem[0] * rhs.elem[0] + lhs.elem[1] * rhs.elem[1] + lhs.elem[2] * rhs.elem[2];
+		return lhs.x() * rhs.x() + lhs.y() * rhs.y() + lhs.z() * rhs.z();
 	}
 
 	__host__ __device__ inline float cross(const Vec3& lhs, const Vec3& rhs) {
-		return lhs.elem[1] * rhs.elem[2] - lhs.elem[2] * rhs.elem[1]
-			+ lhs.elem[2] * rhs.elem[0] - lhs.elem[0] * rhs.elem[2]
-			+ lhs.elem[0] * rhs.elem[1] - lhs.elem[1] * rhs.elem[0];
+		return lhs.y() * rhs.z() - lhs.z() * rhs.y()
+			+ lhs.z() * rhs.x() - lhs.x() * rhs.z()
+			+ lhs.x() * rhs.y() - lhs.y() * rhs.x();
 	}
 
 	__host__ __device__ inline Vec3 unitVec3(Vec3 v) {
