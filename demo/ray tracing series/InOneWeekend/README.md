@@ -11,3 +11,7 @@
 ### Chapter 03 Rays, Simple Camera, Background
 
 ![Chapter03](Chapter03/output.png)
+
+### Chapter 04 Ray-Sphere Intersection
+
+![Chapter04](Chapter04/output.png)

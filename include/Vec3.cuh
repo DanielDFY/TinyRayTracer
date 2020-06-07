@@ -17,10 +17,10 @@ namespace TinyRT {
 		__host__ __device__ float operator[](int i) const { return elem[i]; }
 		__host__ __device__ float& operator[](int i) { return elem[i]; }
 
-		__host__ __device__ Vec3& operator+=(const Vec3& v) {
-			elem[0] += v.elem[0];
-			elem[0] += v.elem[0];
-			elem[0] += v.elem[0];
+		__host__ __device__ Vec3& operator+=(const Vec3& rhs) {
+			elem[0] += rhs.elem[0];
+			elem[0] += rhs.elem[0];
+			elem[0] += rhs.elem[0];
 			return *this;
 		}
 

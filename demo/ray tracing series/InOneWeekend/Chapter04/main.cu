@@ -15,7 +15,20 @@
 
 using namespace TinyRT;
 
+__device__ float hitSphere(const Point3& center, const float radius, const Ray& r) {
+	const Vec3 oc = r.origin() - center;
+	const float a = dot(r.direction(), r.direction());
+	const float b = 2.0 * dot(oc, r.direction());
+	const float c = dot(oc, oc) - radius * radius;
+	const float discriminant = b * b - 4 * a * c;
+	return (discriminant > 0);
+}
+
 __device__ Color rayColor(const Ray& r) {
+	if (hitSphere(Point3(0.0f, 0.0f, -1.0f), 0.5f, r)) {
+		return { 1.0f, 0.0f, 0.0f };
+	}
+
 	const Vec3 unitDirection = unitVec3(r.direction());
 	const float t = 0.5f * (unitDirection.y() + 1.0f);
 	return (1.0f - t) * Color(1.0f, 1.0f, 1.0f) + t * Color(0.5f, 0.7f, 1.0f);
@@ -76,7 +89,7 @@ int main() {
 	const dim3 threadDim(threadBlockWidth, threadBlockHeight);
 
 	// render the image into buffer
-	render<<<blockDim, threadDim>>>(pixelBuffer, imageWidth, imageHeight, lowerLeftCorner, horizontal, vertical, origin);
+	render << <blockDim, threadDim >> > (pixelBuffer, imageWidth, imageHeight, lowerLeftCorner, horizontal, vertical, origin);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
