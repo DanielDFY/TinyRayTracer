@@ -55,10 +55,10 @@ int main() {
 	constexpr int pixelNum = imageWidth * imageHeight;
 	constexpr size_t pixelBufferBytes = pixelNum * sizeof(Color);
 
-	Color* pixelBuffer;
-	checkCudaErrors(cudaMallocManaged(&pixelBuffer, pixelBufferBytes));
-
-	/* camera config */
+	// allocate memory for pixel buffer
+	const auto pixelBufferPtr = cudaManagedUniquePtr<Color>(pixelBufferBytes);
+	
+	// camera setting
 	constexpr float viewPortHeight = 2.0f;
 	constexpr float viewPortWidth = aspectRatio * viewPortHeight;
 	constexpr float focalLength = 1.0f;
@@ -76,7 +76,7 @@ int main() {
 	const dim3 threadDim(threadBlockWidth, threadBlockHeight);
 
 	// render the image into buffer
-	render<<<blockDim, threadDim>>>(pixelBuffer, imageWidth, imageHeight, lowerLeftCorner, horizontal, vertical, origin);
+	render<<<blockDim, threadDim>>>(pixelBufferPtr.get(), imageWidth, imageHeight, lowerLeftCorner, horizontal, vertical, origin);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -93,7 +93,7 @@ int main() {
 
 	// store the pixel data into writing buffer as 8bit color
 	for (int pixelIdx = 0, dataIdx = 0; pixelIdx < pixelNum; ++pixelIdx) {
-		const Color color = pixelBuffer[pixelIdx];
+		const Color color = pixelBufferPtr.get()[pixelIdx];
 		pixelDataPtr[dataIdx++] = static_cast<unsigned char>(color.r8bit());
 		pixelDataPtr[dataIdx++] = static_cast<unsigned char>(color.g8bit());
 		pixelDataPtr[dataIdx++] = static_cast<unsigned char>(color.b8bit());
@@ -104,9 +104,6 @@ int main() {
 
 	// write pixel data to output file
 	stbi_write_png(fileName.c_str(), imageWidth, imageHeight, channelNum, pixelDataPtr.get(), strideBytes);
-
-	// clean
-	checkCudaErrors(cudaFree(pixelBuffer));
 
 	return 0;
 }

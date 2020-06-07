@@ -15,3 +15,7 @@
 ### Chapter 04 Ray-Sphere Intersection
 
 ![Chapter04](Chapter04/output.png)
+
+### Surface Normals and Multiple Objects
+
+![Chapter05](Chapter05/output.png)

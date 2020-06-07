@@ -10,23 +10,17 @@
 
 #include <Color.cuh>
 #include <Ray.cuh>
+#include <Sphere.cuh>
+#include <HittableList.cuh>
 
 #include <helperCuda.h>
 
 using namespace TinyRT;
 
-__device__ float hitSphere(const Point3& center, const float radius, const Ray& r) {
-	const Vec3 oc = r.origin() - center;
-	const float a = dot(r.direction(), r.direction());
-	const float b = 2.0 * dot(oc, r.direction());
-	const float c = dot(oc, oc) - radius * radius;
-	const float discriminant = b * b - 4 * a * c;
-	return (discriminant > 0);
-}
-
-__device__ Color rayColor(const Ray& r) {
-	if (hitSphere(Point3(0.0f, 0.0f, -1.0f), 0.5f, r)) {
-		return { 1.0f, 0.0f, 0.0f };
+__device__ Color rayColor(const Ray& r, Hittable** hittable) {
+	HitRecord rec;
+	if ((*hittable)->hit(r, 0.0f, DOUBLE_INFINITY, rec)) {
+		return 0.5 * Color(rec.normal.x() + 1.0f, rec.normal.y() + 1.0f, -rec.normal.z() + 1.0f);
 	}
 
 	const Vec3 unitDirection = unitVec3(r.direction());
@@ -34,7 +28,15 @@ __device__ Color rayColor(const Ray& r) {
 	return (1.0f - t) * Color(1.0f, 1.0f, 1.0f) + t * Color(0.5f, 0.7f, 1.0f);
 }
 
-__global__ void render(Color* pixelBuffer, int imageWidth, int imageHeight, Vec3 lowerLeftCorner, Vec3 horizontal, Vec3 vertical, Vec3 origin) {
+__global__ void render(
+	Color* pixelBuffer,
+	int imageWidth, int
+	imageHeight,
+	Vec3 lowerLeftCorner,
+	Vec3 horizontal,
+	Vec3 vertical,
+	Vec3 origin,
+	Hittable** hittableWorldObjs) {
 	const int col = threadIdx.x + blockIdx.x * blockDim.x;
 	const int row = threadIdx.y + blockIdx.y * blockDim.y;
 	if (col >= imageWidth || row >= imageHeight)
@@ -47,7 +49,21 @@ __global__ void render(Color* pixelBuffer, int imageWidth, int imageHeight, Vec3
 
 	const Ray r(origin, lowerLeftCorner - origin + u * horizontal + v * vertical);
 
-	pixelBuffer[idx] = rayColor(r);
+	pixelBuffer[idx] = rayColor(r, hittableWorldObjs);
+}
+
+__global__ void createWorld(Hittable** hittableList, Hittable** hittableWorldObjs) {
+	if (threadIdx.x == 0 && blockIdx.x == 0) {
+		*hittableList = new Sphere(Vec3(0.0f, 0.0f, 1.0f), 0.5f);
+		*(hittableList + 1) = new Sphere(Vec3(0.0f, -100.5f, 1.0f), 100.0f);
+		*hittableWorldObjs = new HittableList(hittableList, 2);
+	}
+}
+
+__global__ void freeWorld(Hittable** hittableList, Hittable** hittableWorldObjs) {
+	delete *hittableList;
+	delete *(hittableList + 1);
+	delete *hittableWorldObjs;
 }
 
 int main() {
@@ -71,7 +87,7 @@ int main() {
 	// allocate memory for pixel buffer
 	const auto pixelBufferPtr = cudaManagedUniquePtr<Color>(pixelBufferBytes);
 
-	// camera setting
+	/* camera config */
 	constexpr float viewPortHeight = 2.0f;
 	constexpr float viewPortWidth = aspectRatio * viewPortHeight;
 	constexpr float focalLength = 1.0f;
@@ -82,6 +98,13 @@ int main() {
 	// left-handed Y up
 	const Point3 lowerLeftCorner = origin - horizontal / 2 - vertical / 2 + Vec3(0.0f, 0.0f, focalLength);
 
+	// create world of hittable objects
+	const auto hittableListPtr = cudaUniquePtr<Hittable*>(2 * sizeof(Hittable*));
+	const auto hittableWorldObjsPtr = cudaUniquePtr<Hittable*>(sizeof(Hittable*));
+	createWorld<<<1, 1>>>(hittableListPtr.get(), hittableWorldObjsPtr.get());
+	checkCudaErrors(cudaGetLastError());
+	checkCudaErrors(cudaDeviceSynchronize());
+	
 	// start timer
 	const clock_t start = clock();
 
@@ -89,7 +112,7 @@ int main() {
 	const dim3 threadDim(threadBlockWidth, threadBlockHeight);
 
 	// render the image into buffer
-	render << <blockDim, threadDim >> > (pixelBufferPtr.get(), imageWidth, imageHeight, lowerLeftCorner, horizontal, vertical, origin);
+	render<<<blockDim, threadDim>>>(pixelBufferPtr.get(), imageWidth, imageHeight, lowerLeftCorner, horizontal, vertical, origin, hittableWorldObjsPtr.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -117,6 +140,11 @@ int main() {
 
 	// write pixel data to output file
 	stbi_write_png(fileName.c_str(), imageWidth, imageHeight, channelNum, pixelDataPtr.get(), strideBytes);
+
+	// free world of hittable objects
+	freeWorld<<<1, 1>>>(hittableListPtr.get(), hittableWorldObjsPtr.get());
+	checkCudaErrors(cudaGetLastError());
+	checkCudaErrors(cudaDeviceSynchronize());
 
 	return 0;
 }
