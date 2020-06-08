@@ -3,6 +3,11 @@
 #include <iostream>
 #include <cmath>
 
+#include <helperUtils.h>
+
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
+
 namespace TinyRT {
 	class Vec3 {
 	public:
@@ -24,14 +29,14 @@ namespace TinyRT {
 			return *this;
 		}
 
-		__host__ __device__ Vec3& operator*=(const float k) {
+		__host__ __device__ Vec3& operator*=(float k) {
 			_elem[0] *= k;
 			_elem[1] *= k;
 			_elem[2] *= k;
 			return *this;
 		}
 
-		__host__ __device__ Vec3& operator/=(const float k) {
+		__host__ __device__ Vec3& operator/=(float k) {
 			return *this *= 1 / k;
 		}
 
@@ -41,6 +46,26 @@ namespace TinyRT {
 
 		__host__ __device__ float length() const {
 			return sqrt(lengthSquared());
+		}
+
+		inline static Vec3 random() {
+			return Vec3(randomFloat(), randomFloat(), randomFloat());
+		}
+
+		inline static Vec3 random(float min, float max) {
+			return Vec3(randomFloat(min, max), randomFloat(min, max), randomFloat(min, max));
+		}
+
+		__device__ inline static Vec3 random(curandState* const randStatePtr) {
+			return Vec3(curand_uniform(randStatePtr), curand_uniform(randStatePtr), curand_uniform(randStatePtr));
+		}
+
+		__device__ inline static Vec3 random(curandState* const randStatePtr, float min, float max) {
+			return Vec3(
+				min + (max - min) * curand_uniform(randStatePtr),
+				min + (max - min) * curand_uniform(randStatePtr),
+				min + (max - min) * curand_uniform(randStatePtr)
+			);
 		}
 
 	protected:
@@ -64,15 +89,15 @@ namespace TinyRT {
 		return { lhs.x() * rhs.x(), lhs.y() * rhs.y(), lhs.z() * rhs.z() };
 	}
 
-	__host__ __device__ inline Vec3 operator*(const float k, const Vec3& v) {
+	__host__ __device__ inline Vec3 operator*(float k, const Vec3& v) {
 		return { k * v.x(), k * v.y(), k * v.z() };
 	}
 
-	__host__ __device__ inline Vec3 operator*(const Vec3& v, const float k) {
+	__host__ __device__ inline Vec3 operator*(const Vec3& v, float k) {
 		return k * v;
 	}
 
-	__host__ __device__ inline Vec3 operator/(const Vec3& v, const float k) {
+	__host__ __device__ inline Vec3 operator/(const Vec3& v, float k) {
 		return (1 / k) * v;
 	}
 
@@ -86,7 +111,55 @@ namespace TinyRT {
 			+ lhs.x() * rhs.y() - lhs.y() * rhs.x();
 	}
 
-	__host__ __device__ inline Vec3 unitVec3(Vec3 v) {
+	__host__ __device__ inline Vec3 unitVec3(const Vec3 v) {
 		return v / v.length();
+	}
+
+	// bug when add -rdc=true to nvcc and separate into .cu and .cuh, so define in header file
+
+	Vec3 randomVec3InUnitSphere() {
+		while (true) {
+			const Vec3 p = Vec3::random(-1.0f, 1.0f);
+			if (p.lengthSquared() >= 1) continue;
+			return p;
+		}
+	}
+
+	Vec3 randomUnitVec3() {
+		const auto a = randomFloat(0.0f, 2 * M_PI);
+		const auto z = randomFloat(-1.0f, 1.0f);
+		const auto r = sqrt(1 - z * z);
+		return { r * cos(a), r * sin(a), z };
+	}
+
+	Vec3 randomVec3InHemisphere(const Vec3& normal) {
+		const Vec3 vec3InUnitSphere = randomVec3InUnitSphere();
+		if (dot(vec3InUnitSphere, normal) > 0.0f) // In the same hemisphere as the normal
+			return vec3InUnitSphere;
+		else
+			return -vec3InUnitSphere;
+	}
+
+	__device__ Vec3 randomVec3InUnitSphere(curandState* const randStatePtr) {
+		while (true) {
+			const Vec3 p = Vec3::random(randStatePtr, -1.0f, 1.0f);
+			if (p.lengthSquared() >= 1) continue;
+			return p;
+		}
+	}
+
+	__device__ Vec3 randomUnitVec3(curandState* const randStatePtr) {
+		const auto a = 2.0f * M_PI * curand_uniform(randStatePtr);
+		const auto z = -1.0f + 2.0f * curand_uniform(randStatePtr);
+		const auto r = sqrt(1 - z * z);
+		return { r * cos(a), r * sin(a), z };
+	}
+
+	__device__ Vec3 randomVec3InHemisphere(curandState* const randStatePtr, const Vec3& normal) {
+		const Vec3 vec3InUnitSphere = randomVec3InUnitSphere(randStatePtr);
+		if (dot(vec3InUnitSphere, normal) > 0.0f) // In the same hemisphere as the normal
+			return vec3InUnitSphere;
+		else
+			return -vec3InUnitSphere;
 	}
 }

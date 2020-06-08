@@ -9,11 +9,11 @@ namespace TinyRT {
 		__host__ __device__ Color(float e0, float e1, float e2) : Vec3(e0, e1, e2) {};
 		__host__ __device__ Color(Vec3 v) : Color(v.x(), v.y(), v.z()) {}
 
-		__host__ __device__ void clamp(int samplesPerPixel) {
-			const float scale = 1.0f / static_cast<float>(samplesPerPixel);
-			_elem[0] *= scale;
-			_elem[1] *= scale;
-			_elem[2] *= scale;
+		__host__ __device__ void gammaCorrect() {
+			// gamma-correct for gamma=2.0.
+			_elem[0] = sqrt(_elem[0]);
+			_elem[1] = sqrt(_elem[1]);
+			_elem[2] = sqrt(_elem[2]);
 		}
 
 		__host__ __device__ float r() const { return _elem[0]; }

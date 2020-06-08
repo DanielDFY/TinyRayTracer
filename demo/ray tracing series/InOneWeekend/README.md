@@ -23,3 +23,7 @@
 ### Chapter 06 Anti-aliasing
 
 ![Chapter06](Chapter06/output.png)
+
+### Chapter 07 Diffuse Materials
+
+![](Chapter07/output.png)

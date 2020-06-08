@@ -19,15 +19,24 @@
 
 using namespace TinyRT;
 
-__device__ Color rayColor(const Ray& r, Hittable** hittable) {
-	HitRecord rec;
-	if ((*hittable)->hit(r, 0.0f, M_FLOAT_INFINITY, rec)) {
-		return 0.5 * Color(rec.normal.x() + 1.0f, rec.normal.y() + 1.0f, -rec.normal.z() + 1.0f);
+__device__ Color rayColor(const Ray& r, Hittable** hittable, const int maxDepth, curandState* const randStatePtr) {
+	Ray curRay = r;
+	float curAttenuation = 1.0f;
+	for (size_t i = 0; i < maxDepth; ++i) {
+		HitRecord rec;
+		if ((*hittable)->hit(curRay, 0.0001f, M_FLOAT_INFINITY, rec)) {
+			Vec3 target = rec.point + rec.normal + randomUnitVec3(randStatePtr);
+			curAttenuation *= 0.5f;
+			curRay = Ray(rec.point, target - rec.point);
+		} else {
+			const Vec3 unitDirection = unitVec3(curRay.direction());
+			const double t = 0.5f * (unitDirection.y() + 1.0f);
+			const Color background = (1.0f - t) * Color(1.0f, 1.0f, 1.0f) + t * Color(0.5f, 0.7f, 1.0f);
+			return curAttenuation * background;
+		}
 	}
-
-	const Vec3 unitDirection = unitVec3(r.direction());
-	const float t = 0.5f * (unitDirection.y() + 1.0f);
-	return (1.0f - t) * Color(1.0f, 1.0f, 1.0f) + t * Color(0.5f, 0.7f, 1.0f);
+	// exceed max depth
+	return { 0.0f, 0.0f, 0.0f };
 }
 
 __global__ void renderInit(const int imageWidth, const int imageHeight, curandState* const randStateList) {
@@ -37,7 +46,7 @@ __global__ void renderInit(const int imageWidth, const int imageHeight, curandSt
 		return;
 
 	const int idx = row * imageWidth + col;
-	
+
 	// init random numbers for anti-aliasing
 	// each thread gets its own special seed, fixed sequence number, fixed offset
 	curand_init(2020 + idx, 0, 0, &randStateList[idx]);
@@ -45,13 +54,14 @@ __global__ void renderInit(const int imageWidth, const int imageHeight, curandSt
 
 __global__ void render(
 	Color* const pixelBuffer,
-	const int imageWidth, 
+	const int imageWidth,
 	const int imageHeight,
 	Camera** const camera,
 	curandState* const randStateList,
 	const int samplesPerPixel,
+	const int maxDepth,
 	Hittable** const hittableWorldObjList) {
-	
+
 	const int col = threadIdx.x + blockIdx.x * blockDim.x;
 	const int row = threadIdx.y + blockIdx.y * blockDim.y;
 	if (col >= imageWidth || row >= imageHeight)
@@ -67,10 +77,11 @@ __global__ void render(
 
 		const Ray r = (*camera)->getRay(u, v);
 
-		pixelColor += rayColor(r, hittableWorldObjList);
+		pixelColor += rayColor(r, hittableWorldObjList, maxDepth, &randState);
 	}
 
 	pixelColor /= samplesPerPixel;
+	pixelColor.gammaCorrect();
 
 	pixelBuffer[idx] = pixelColor;
 }
@@ -85,10 +96,10 @@ __global__ void createWorld(Camera** camera, Hittable** hittableList, Hittable**
 }
 
 __global__ void freeWorld(Camera** camera, Hittable** hittableList, Hittable** hittableWorldObjList) {
-	delete *camera;
+	delete* camera;
 	delete hittableList[0];
 	delete hittableList[1];
-	delete * hittableWorldObjList;
+	delete* hittableWorldObjList;
 }
 
 int main() {
@@ -97,6 +108,7 @@ int main() {
 	constexpr int imageWidth = 400;
 	constexpr int imageHeight = static_cast<int>(imageWidth / aspectRatio);
 	constexpr int samplesPerPixel = 100;
+	constexpr int maxDepth = 50;
 
 	/* image output file */
 	const std::string fileName("output.png");
@@ -121,7 +133,7 @@ int main() {
 	const auto cameraPtr = cudaUniquePtr<Camera*>(sizeof(Camera*));
 	const auto hittableListPtr = cudaUniquePtr<Hittable*>(2 * sizeof(Hittable*));
 	const auto hittableWorldObjListPtr = cudaUniquePtr<Hittable*>(sizeof(Hittable*));
-	createWorld<<<1, 1>>>(cameraPtr.get(), hittableListPtr.get(), hittableWorldObjListPtr.get());
+	createWorld << <1, 1 >> > (cameraPtr.get(), hittableListPtr.get(), hittableWorldObjListPtr.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -135,9 +147,18 @@ int main() {
 	renderInit<<<blockDim, threadDim>>>(imageWidth, imageHeight, randStateListPtr.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
-	
+
 	// render the image into buffer
-	render<<<blockDim, threadDim>>>(pixelBufferPtr.get(), imageWidth, imageHeight, cameraPtr.get(), randStateListPtr.get(), samplesPerPixel, hittableWorldObjListPtr.get());
+	render<<<blockDim, threadDim>>>(
+		pixelBufferPtr.get(), 
+		imageWidth, 
+		imageHeight, 
+		cameraPtr.get(), 
+		randStateListPtr.get(), 
+		samplesPerPixel, 
+		maxDepth, 
+		hittableWorldObjListPtr.get()
+	);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
