@@ -7,27 +7,27 @@ namespace TinyRT {
 	class Vec3 {
 	public:
 		Vec3() = default;
-		__host__ __device__ Vec3(float e0, float e1, float e2) : elem{ e0, e1, e2 } {}
+		__host__ __device__ Vec3(float e0, float e1, float e2) : _elem{ e0, e1, e2 } {}
 
-		__host__ __device__ float x() const { return elem[0]; }
-		__host__ __device__ float y() const { return elem[1]; }
-		__host__ __device__ float z() const { return elem[2]; }
+		__host__ __device__ float x() const { return _elem[0]; }
+		__host__ __device__ float y() const { return _elem[1]; }
+		__host__ __device__ float z() const { return _elem[2]; }
 
-		__host__ __device__ Vec3 operator-() const { return { -elem[0], -elem[1], -elem[2] }; }
-		__host__ __device__ float operator[](int i) const { return elem[i]; }
-		__host__ __device__ float& operator[](int i) { return elem[i]; }
+		__host__ __device__ Vec3 operator-() const { return { -_elem[0], -_elem[1], -_elem[2] }; }
+		__host__ __device__ float operator[](int i) const { return _elem[i]; }
+		__host__ __device__ float& operator[](int i) { return _elem[i]; }
 
 		__host__ __device__ Vec3& operator+=(const Vec3& rhs) {
-			elem[0] += rhs.elem[0];
-			elem[0] += rhs.elem[0];
-			elem[0] += rhs.elem[0];
+			_elem[0] += rhs._elem[0];
+			_elem[1] += rhs._elem[1];
+			_elem[2] += rhs._elem[2];
 			return *this;
 		}
 
 		__host__ __device__ Vec3& operator*=(const float k) {
-			elem[0] *= k;
-			elem[1] *= k;
-			elem[2] *= k;
+			_elem[0] *= k;
+			_elem[1] *= k;
+			_elem[2] *= k;
 			return *this;
 		}
 
@@ -36,7 +36,7 @@ namespace TinyRT {
 		}
 
 		__host__ __device__ float lengthSquared() const {
-			return elem[0] * elem[0] + elem[1] * elem[1] + elem[2] * elem[2];
+			return _elem[0] * _elem[0] + _elem[1] * _elem[1] + _elem[2] * _elem[2];
 		}
 
 		__host__ __device__ float length() const {
@@ -44,7 +44,7 @@ namespace TinyRT {
 		}
 
 	protected:
-		float elem[3];
+		float _elem[3];
 	};
 
 	// Utility functions

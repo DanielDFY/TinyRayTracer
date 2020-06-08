@@ -6,10 +6,10 @@
 
 namespace TinyRT {
 	/* Math Utils */
-	constexpr double DOUBLE_INFINITY = std::numeric_limits<float>::infinity();
-	constexpr double PI = 3.1415926535897932385;
+	constexpr float M_FLOAT_INFINITY = std::numeric_limits<float>::infinity();
+	constexpr float M_PI = 3.1415926535897932385f;
 
-	inline double degreeToRadian(const double degree) { return degree * PI / 180.0; }
+	inline float degreeToRadian(const float degree) { return degree * M_PI / 180.0f; }
 	
 	/* Error Checking */
 	#define checkCudaErrors(val) check((val), #val, __FILE__, __LINE__)

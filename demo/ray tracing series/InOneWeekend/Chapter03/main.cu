@@ -11,7 +11,7 @@
 #include <Color.cuh>
 #include <Ray.cuh>
 
-#include <helperCuda.h>
+#include <helperUtils.h>
 
 using namespace TinyRT;
 
@@ -21,7 +21,15 @@ __device__ Color rayColor(const Ray& r) {
 	return (1.0f - t) * Color(1.0f, 1.0f, 1.0f) + t * Color(0.5f, 0.7f, 1.0f);
 }
 
-__global__ void render(Color* pixelBuffer, int imageWidth, int imageHeight, Vec3 lowerLeftCorner, Vec3 horizontal, Vec3 vertical, Vec3 origin) {
+__global__ void render(
+	Color* const pixelBuffer,
+	const int imageWidth,
+	const int imageHeight,
+	const Vec3 lowerLeftCorner,
+	const Vec3 horizontal,
+	const Vec3 vertical,
+	const Vec3 origin) {
+	
 	const int col = threadIdx.x + blockIdx.x * blockDim.x;
 	const int row = threadIdx.y + blockIdx.y * blockDim.y;
 	if (col >= imageWidth || row >= imageHeight)
@@ -32,7 +40,7 @@ __global__ void render(Color* pixelBuffer, int imageWidth, int imageHeight, Vec3
 	const auto u = static_cast<float>(col) / static_cast<float>(imageWidth - 1);
 	const auto v = 1.0f - static_cast<float>(row) / static_cast<float>(imageHeight - 1);
 
-	const Ray r(origin, lowerLeftCorner - origin + u * horizontal + v * vertical);
+	const Ray r(origin, lowerLeftCorner + u * horizontal + v * vertical - origin);
 
 	pixelBuffer[idx] = rayColor(r);
 }

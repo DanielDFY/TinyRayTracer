@@ -10,11 +10,11 @@
 
 #include <Color.cuh>
 
-#include <helperCuda.h>
+#include <helperUtils.h>
 
 using namespace TinyRT;
 
-__global__ void render(Color* pixelBuffer, int imageWidth, int imageHeight) {
+__global__ void render(Color* const pixelBuffer, const int imageWidth, const int imageHeight) {
 	const int col = threadIdx.x + blockIdx.x * blockDim.x;
 	const int row = threadIdx.y + blockIdx.y * blockDim.y;
 	if (col >= imageWidth || row >= imageHeight)

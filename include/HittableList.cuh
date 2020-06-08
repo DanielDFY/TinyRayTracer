@@ -8,6 +8,7 @@ namespace TinyRT {
 		__device__ HittableList() {};
 		__device__ HittableList(Hittable** const list, const size_t size) : _list(list), _size(size) {}
 
+		// bug when add -rdc=true to nvcc and separate into .cu and .cuh, so define in header file
 		__device__ bool hit(const Ray& r, float tMin, float tMax, HitRecord& rec) const override {
 			HitRecord tempRec;
 			bool isHit = false;

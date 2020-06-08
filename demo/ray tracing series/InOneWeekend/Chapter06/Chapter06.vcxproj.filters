@@ -15,6 +15,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\Camera.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\helperUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <CudaCompile Include="main.cu">
       <Filter>源文件</Filter>
     </CudaCompile>

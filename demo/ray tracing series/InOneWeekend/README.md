@@ -16,6 +16,10 @@
 
 ![Chapter04](Chapter04/output.png)
 
-### Surface Normals and Multiple Objects
+### Chapter 05 Surface Normals and Multiple Objects
 
 ![Chapter05](Chapter05/output.png)
+
+### Chapter 06 Anti-aliasing
+
+![Chapter06](Chapter06/output.png)

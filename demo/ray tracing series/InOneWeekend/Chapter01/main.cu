@@ -8,11 +8,11 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include <helperCuda.h>
+#include <helperUtils.h>
 
 using namespace TinyRT;
 
-__global__ void render(float* pixelBuffer, int imageWidth, int imageHeight, int channelNum) {
+__global__ void render(float* const pixelBuffer, const int imageWidth, const int imageHeight, const int channelNum) {
 	const int col = threadIdx.x + blockIdx.x * blockDim.x;
 	const int row = threadIdx.y + blockIdx.y * blockDim.y;
 	if (col >= imageWidth || row >= imageHeight)
