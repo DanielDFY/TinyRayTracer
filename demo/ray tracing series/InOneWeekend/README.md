@@ -31,3 +31,7 @@
 ### Chapter 08 Metal
 
 ![](Chapter08/output.png)
+
+### Chapter 09 Dielectric
+
+![](Chapter09/output.png)

@@ -173,4 +173,11 @@ namespace TinyRT {
 	__host__ __device__ inline Vec3 reflect(const Vec3& v, const Vec3& n) {
 		return v - 2.0f * dot(v, n) * n;
 	}
+
+	__host__ __device__ Vec3 refract(const Vec3& uv, const Vec3& n, float etaOverEtaPrime) {
+		const float cosTheta = dot(-uv, n);
+		const Vec3 rayOutParallel = etaOverEtaPrime * (uv + cosTheta * n);
+		const Vec3 rayOutPerpendicular = -sqrt(1.0 - rayOutParallel.lengthSquared()) * n;
+		return rayOutParallel + rayOutPerpendicular;
+	}
 }
