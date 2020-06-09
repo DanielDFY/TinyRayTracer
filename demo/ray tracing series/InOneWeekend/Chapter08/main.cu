@@ -13,6 +13,7 @@
 #include <Camera.cuh>
 #include <Sphere.cuh>
 #include <HittableList.cuh>
+#include <Material.cuh>
 
 #include <helperUtils.h>
 #include <curand_kernel.h>
@@ -21,14 +22,20 @@ using namespace TinyRT;
 
 __device__ Color rayColor(const Ray& r, Hittable** hittable, const int maxDepth, curandState* const randStatePtr) {
 	Ray curRay = r;
-	float curAttenuation = 1.0f;
+	Vec3 curAttenuation(1.0f, 1.0f, 1.0f);
 	for (size_t i = 0; i < maxDepth; ++i) {
 		HitRecord rec;
 		if ((*hittable)->hit(curRay, 0.0001f, M_FLOAT_INFINITY, rec)) {
-			const Vec3 target = rec.point + rec.normal + randomUnitVec3(randStatePtr);
-			curAttenuation *= 0.5f;
-			curRay = Ray(rec.point, target - rec.point);
-		} else {
+			Ray scattered;
+			Vec3 attenuation;
+			if (rec.matPtr->scatter(curRay, rec, attenuation, scattered, randStatePtr)) {
+				curRay = scattered;
+				curAttenuation *= attenuation;
+			} else {
+				return { 0.0, 0.0, 0.0 };
+			}
+		}
+		else {
 			const Vec3 unitDirection = unitVec3(curRay.direction());
 			const double t = 0.5f * (unitDirection.y() + 1.0f);
 			const Color background = (1.0f - t) * Color(1.0f, 1.0f, 1.0f) + t * Color(0.5f, 0.7f, 1.0f);
@@ -89,9 +96,11 @@ __global__ void render(
 __global__ void createWorld(Camera** camera, Hittable** hittableList, Hittable** hittableWorldObjList) {
 	if (threadIdx.x == 0 && blockIdx.x == 0) {
 		*camera = new Camera();
-		hittableList[0] = new Sphere(Point3(0.0f, 0.0f, 1.0f), 0.5f);
-		hittableList[1] = new Sphere(Point3(0.0f, -100.5f, 1.0f), 100.0f);
-		*hittableWorldObjList = new HittableList(hittableList, 2);
+		hittableList[0] = new Sphere(Point3(0.0f, 0.0f, 1.0f), 0.5f, new Lambertian(Color(0.7f, 0.3f, 0.3f)));
+		hittableList[1] = new Sphere(Point3(0.0f, -100.5f, 1.0f), 100.0f, new Lambertian(Color(0.8f, 0.8f, 0.0f)));
+		hittableList[2] = new Sphere(Point3(1.0f, 0.0f, 1.0f), 0.5f, new Metal(Color(0.8f, 0.6f, 0.2f), 1.0f));
+		hittableList[3] = new Sphere(Point3(-1.0f, 0.0f, 1.0f), 0.5f, new Metal(Color(0.8f, 0.8f, 0.8f), 0.3f));
+		*hittableWorldObjList = new HittableList(hittableList, 4);
 	}
 }
 
@@ -99,6 +108,8 @@ __global__ void freeWorld(Camera** camera, Hittable** hittableList, Hittable** h
 	delete* camera;
 	delete hittableList[0];
 	delete hittableList[1];
+	delete hittableList[2];
+	delete hittableList[3];
 	delete* hittableWorldObjList;
 }
 
@@ -131,9 +142,9 @@ int main() {
 
 	// create world of hittable objects and the camera
 	const auto cameraPtr = cudaUniquePtr<Camera*>(sizeof(Camera*));
-	const auto hittableListPtr = cudaUniquePtr<Hittable*>(2 * sizeof(Hittable*));
+	const auto hittableListPtr = cudaUniquePtr<Hittable*>(4 * sizeof(Hittable*));
 	const auto hittableWorldObjListPtr = cudaUniquePtr<Hittable*>(sizeof(Hittable*));
-	createWorld << <1, 1 >> > (cameraPtr.get(), hittableListPtr.get(), hittableWorldObjListPtr.get());
+	createWorld<<<1, 1>>>(cameraPtr.get(), hittableListPtr.get(), hittableWorldObjListPtr.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -150,13 +161,13 @@ int main() {
 
 	// render the image into buffer
 	render<<<blockDim, threadDim>>>(
-		pixelBufferPtr.get(), 
-		imageWidth, 
-		imageHeight, 
-		cameraPtr.get(), 
-		randStateListPtr.get(), 
-		samplesPerPixel, 
-		maxDepth, 
+		pixelBufferPtr.get(),
+		imageWidth,
+		imageHeight,
+		cameraPtr.get(),
+		randStateListPtr.get(),
+		samplesPerPixel,
+		maxDepth,
 		hittableWorldObjListPtr.get()
 	);
 	checkCudaErrors(cudaGetLastError());

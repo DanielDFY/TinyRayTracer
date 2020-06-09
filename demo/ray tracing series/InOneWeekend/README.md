@@ -27,3 +27,7 @@
 ### Chapter 07 Diffuse Materials
 
 ![](Chapter07/output.png)
+
+### Chapter 08 Metal
+
+![](Chapter08/output.png)

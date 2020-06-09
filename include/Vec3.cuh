@@ -29,6 +29,13 @@ namespace TinyRT {
 			return *this;
 		}
 
+		__host__ __device__ Vec3& operator*=(const Vec3& rhs) {
+			_elem[0] *= rhs._elem[0];
+			_elem[1] *= rhs._elem[1];
+			_elem[2] *= rhs._elem[2];
+			return *this;
+		}
+
 		__host__ __device__ Vec3& operator*=(float k) {
 			_elem[0] *= k;
 			_elem[1] *= k;
@@ -155,11 +162,15 @@ namespace TinyRT {
 		return { r * cos(a), r * sin(a), z };
 	}
 
-	__device__ Vec3 randomVec3InHemisphere(curandState* const randStatePtr, const Vec3& normal) {
+	__device__ Vec3 randomVec3InHemisphere(const Vec3& normal, curandState* const randStatePtr) {
 		const Vec3 vec3InUnitSphere = randomVec3InUnitSphere(randStatePtr);
 		if (dot(vec3InUnitSphere, normal) > 0.0f) // In the same hemisphere as the normal
 			return vec3InUnitSphere;
 		else
 			return -vec3InUnitSphere;
+	}
+
+	__host__ __device__ inline Vec3 reflect(const Vec3& v, const Vec3& n) {
+		return v - 2.0f * dot(v, n) * n;
 	}
 }

@@ -19,9 +19,4 @@
       <Filter>源文件</Filter>
     </CudaCompile>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\..\include\Material.cuh">
-      <Filter>头文件</Filter>
-    </ClInclude>
-  </ItemGroup>
 </Project>

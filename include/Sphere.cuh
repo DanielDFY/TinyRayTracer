@@ -6,7 +6,8 @@ namespace TinyRT {
 	class Sphere : public Hittable {
 	public:
 		__device__ Sphere() = delete;
-		__device__ Sphere(Point3 center, float radius) : Hittable(), _center(center), _radius(radius) {}
+		__device__ Sphere(Point3 center, float radius, Material* matPtr = nullptr)
+			: Hittable(), _center(center), _radius(radius), _matPtr(matPtr) {}
 
 		__device__ Point3 center() const { return _center; }
 		__device__ float radius() const { return _radius; }
@@ -27,22 +28,25 @@ namespace TinyRT {
 					rec.point = r.at(t);
 					const Vec3 outwardNormal = (rec.point - _center) / _radius;
 					rec.setFaceNormal(r, outwardNormal);
+					rec.matPtr = _matPtr;
 					return true;
 				}
 				t = (-bHalf + root) / a;
 				if (t > tMin && t < tMax) {
 					rec.t = t;
+					rec.point = r.at(t);
 					const Vec3 outwardNormal = (rec.point - _center) / _radius;
 					rec.setFaceNormal(r, outwardNormal);
+					rec.matPtr = _matPtr;
 					return true;
 				}
 			}
-
 			return false;
 		}
 
 	private:
 		Point3 _center;
 		float _radius;
+		Material* _matPtr;
 	};
 }
