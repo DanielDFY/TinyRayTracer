@@ -112,10 +112,10 @@ namespace TinyRT {
 		return lhs.x() * rhs.x() + lhs.y() * rhs.y() + lhs.z() * rhs.z();
 	}
 
-	__host__ __device__ inline float cross(const Vec3& lhs, const Vec3& rhs) {
-		return lhs.y() * rhs.z() - lhs.z() * rhs.y()
-			+ lhs.z() * rhs.x() - lhs.x() * rhs.z()
-			+ lhs.x() * rhs.y() - lhs.y() * rhs.x();
+	__host__ __device__ inline Vec3 cross(const Vec3& lhs, const Vec3& rhs) {
+		return { lhs.y() * rhs.z() - lhs.z() * rhs.y(),
+			lhs.z() * rhs.x() - lhs.x() * rhs.z(),
+			lhs.x() * rhs.y() - lhs.y() * rhs.x() };
 	}
 
 	__host__ __device__ inline Vec3 unitVec3(const Vec3 v) {
@@ -177,7 +177,7 @@ namespace TinyRT {
 	__host__ __device__ Vec3 refract(const Vec3& uv, const Vec3& n, float etaOverEtaPrime) {
 		const float cosTheta = dot(-uv, n);
 		const Vec3 rayOutParallel = etaOverEtaPrime * (uv + cosTheta * n);
-		const Vec3 rayOutPerpendicular = -sqrt(1.0 - rayOutParallel.lengthSquared()) * n;
+		const Vec3 rayOutPerpendicular = -sqrt(1.0f - rayOutParallel.lengthSquared()) * n;
 		return rayOutParallel + rayOutPerpendicular;
 	}
 }

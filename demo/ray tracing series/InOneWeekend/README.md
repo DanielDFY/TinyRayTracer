@@ -35,3 +35,7 @@
 ### Chapter 09 Dielectric
 
 ![](Chapter09/output.png)
+
+### Chapter 09 Positionable Camera
+
+![](Chapter10/output.png)

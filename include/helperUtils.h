@@ -12,7 +12,7 @@ namespace TinyRT {
 	constexpr float M_FLOAT_INFINITY = std::numeric_limits<float>::infinity();
 	constexpr float M_PI = 3.1415926535897932385f;
 
-	inline float degreeToRadian(const float degree) { return degree * M_PI / 180.0f; }
+	__host__ __device__ inline float degreeToRadian(const float degree) { return degree * M_PI / 180.0f; }
 
 	inline float randomFloat() {
 		// returns a random real in [0,1)

@@ -5,17 +5,21 @@
 namespace TinyRT {
 	class Camera {
 	public:
-		__device__ Camera() {
-			const float aspectRatio = 16.0f / 9.0f;
-			const float viewportHeight = 2.0f;
+		__device__ Camera() = delete;
+		__device__ Camera(const Point3& lookFrom, const Point3& lookAt, const Vec3& vUp, float vFov, float aspectRatio) {
+			const float theta = degreeToRadian(vFov);
+			const float h = tan(theta / 2.0f);
+			const float viewportHeight = 2.0f * h;
 			const float viewportWidth = aspectRatio * viewportHeight;
-			const float focalLength = 1.0f;
 
-			_origin = Point3(0.0f, 0.0f, 0.0f);
-			_horizontal = Vec3(viewportWidth, 0.0f, 0.0f);
-			_vertical = Vec3(0.0f, viewportHeight, 0.0f);
-			// left-handed Y up
-			_lowerLeftCorner = _origin - _horizontal / 2.0f - _vertical / 2.0f + Vec3(0.0f, 0.0f, focalLength);
+			const Vec3 w = unitVec3(lookAt - lookFrom);
+			const Vec3 u = unitVec3(cross(vUp, w));
+			const Vec3 v = cross(w, u);
+
+			_origin = lookFrom;
+			_horizontal = viewportWidth * u;
+			_vertical = viewportHeight * v;
+			_lowerLeftCorner = _origin - _horizontal / 2 - _vertical / 2 + w;
 		}
 
 		__device__ Ray getRay(float u, float v) const {
