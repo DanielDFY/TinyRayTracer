@@ -64,11 +64,12 @@ namespace TinyRT {
 		}
 
 		__device__ inline static Vec3 random(curandState* const randStatePtr) {
-			return Vec3(curand_uniform(randStatePtr), curand_uniform(randStatePtr), curand_uniform(randStatePtr));
+			return randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : Vec3(curand_uniform(randStatePtr), curand_uniform(randStatePtr), curand_uniform(randStatePtr));
 		}
 
-		__device__ inline static Vec3 random(curandState* const randStatePtr, float min, float max) {
-			return Vec3(
+		__device__ inline static Vec3 random(float min, float max, curandState* const randStatePtr) {
+			return randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : 
+				Vec3(
 				min + (max - min) * curand_uniform(randStatePtr),
 				min + (max - min) * curand_uniform(randStatePtr),
 				min + (max - min) * curand_uniform(randStatePtr)
@@ -149,13 +150,15 @@ namespace TinyRT {
 
 	__device__ Vec3 randomVec3InUnitSphere(curandState* const randStatePtr) {
 		while (true) {
-			const Vec3 p = Vec3::random(randStatePtr, -1.0f, 1.0f);
+			const Vec3 p = randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : Vec3::random(-1.0f, 1.0f, randStatePtr);
 			if (p.lengthSquared() >= 1) continue;
 			return p;
 		}
 	}
 
 	__device__ Vec3 randomUnitVec3(curandState* const randStatePtr) {
+		if (randStatePtr == nullptr)
+			return { 0.0f, 0.0f, 0.0f };
 		const auto a = 2.0f * M_PI * curand_uniform(randStatePtr);
 		const auto z = -1.0f + 2.0f * curand_uniform(randStatePtr);
 		const auto r = sqrt(1 - z * z);
@@ -163,11 +166,20 @@ namespace TinyRT {
 	}
 
 	__device__ Vec3 randomVec3InHemisphere(const Vec3& normal, curandState* const randStatePtr) {
-		const Vec3 vec3InUnitSphere = randomVec3InUnitSphere(randStatePtr);
+		const Vec3 vec3InUnitSphere = randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : randomVec3InUnitSphere(randStatePtr);
 		if (dot(vec3InUnitSphere, normal) > 0.0f) // In the same hemisphere as the normal
 			return vec3InUnitSphere;
 		else
 			return -vec3InUnitSphere;
+	}
+
+	__device__ Vec3 randomVec3InUnitDisk(curandState* const randStatePtr) {
+		while (true) {
+			const auto v = randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : 
+				Vec3(-1.0f + 1.0f * curand_uniform(randStatePtr), -1.0f + 1.0f * curand_uniform(randStatePtr), 0.0f);
+			if (v.lengthSquared() >= 1.0f) continue;
+			return v;
+		}
 	}
 
 	__host__ __device__ inline Vec3 reflect(const Vec3& v, const Vec3& n) {

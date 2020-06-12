@@ -133,7 +133,7 @@ int main() {
 	const auto cameraPtr = cudaUniquePtr<Camera*>(sizeof(Camera*));
 	const auto hittableListPtr = cudaUniquePtr<Hittable*>(2 * sizeof(Hittable*));
 	const auto hittableWorldObjListPtr = cudaUniquePtr<Hittable*>(sizeof(Hittable*));
-	createWorld << <1, 1 >> > (cameraPtr.get(), hittableListPtr.get(), hittableWorldObjListPtr.get());
+	createWorld<<<1, 1>>>(cameraPtr.get(), hittableListPtr.get(), hittableWorldObjListPtr.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 

@@ -80,8 +80,7 @@ namespace TinyRT {
 					const Vec3 reflected = reflect(unitDirection, rec.normal);
 					scattered = Ray(rec.point, reflected);
 					return true;
-				}
-				else {
+				} else {
 					const Vec3 refracted = refract(unitDirection, rec.normal, etaOverEtaPrime);
 					scattered = Ray(rec.point, refracted);
 					return true;

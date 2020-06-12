@@ -108,11 +108,10 @@ __global__ void createWorld(Camera** camera, float aspectRatio, Hittable** hitta
 
 __global__ void freeWorld(Camera** camera, Hittable** hittableList, Hittable** hittableWorldObjList) {
 	delete* camera;
-	delete hittableList[0];
-	delete hittableList[1];
-	delete hittableList[2];
-	delete hittableList[3];
-	delete hittableList[4];
+	for (int i = 0; i < 5; ++i) {
+		delete (static_cast<Sphere*>(hittableList[i]))->matPtr();
+		delete hittableList[i];
+	}
 	delete* hittableWorldObjList;
 }
 

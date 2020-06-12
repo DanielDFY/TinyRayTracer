@@ -81,9 +81,9 @@ __global__ void render(
 	Color pixelColor(0.0f, 0.0f, 0.0f);
 	for (size_t s = 0; s < samplesPerPixel; ++s) {
 		const auto u = (static_cast<float>(col) + curand_uniform(&randState)) / static_cast<float>(imageWidth - 1);
-		const auto v = 1.0f - (static_cast<float>(row) + curand_uniform(&randState)) / static_cast<float>(imageHeight - 1);
+		const auto v = 1.0 - (static_cast<float>(row) + curand_uniform(&randState)) / static_cast<float>(imageHeight - 1);
 
-		const Ray r = (*camera)->getRay(u, v);
+		const Ray r = (*camera)->getRay(u, v, &randState);
 
 		pixelColor += rayColor(r, hittableWorldObjList, maxDepth, &randState);
 	}
@@ -94,9 +94,16 @@ __global__ void render(
 	pixelBuffer[idx] = pixelColor;
 }
 
-__global__ void createWorld(Camera** camera, Hittable** hittableList, Hittable** hittableWorldObjList) {
+__global__ void createWorld(Camera** camera, float aspectRatio, Hittable** hittableList, Hittable** hittableWorldObjList) {
 	if (threadIdx.x == 0 && blockIdx.x == 0) {
-		*camera = new Camera();
+		const Point3 lookFrom(3.0f, 3.0f, -2.0f);
+		const Point3 lookAt(0.0f, 0.0f, 1.0f);
+		const Vec3 vUp(0.0f, 1.0f, 0.0f);
+		const float vFov = 20.0f;
+		const float aperture = 2.0f;
+		const float distToFocus = (lookAt - lookFrom).length();
+		
+		*camera = new Camera(lookFrom, lookAt, vUp, vFov, aspectRatio, aperture, distToFocus);
 		hittableList[0] = new Sphere(Point3(0.0f, 0.0f, 1.0f), 0.5f, new Lambertian(Color(0.1f, 0.2f, 0.5f)));
 		hittableList[1] = new Sphere(Point3(0.0f, -100.5f, 1.0f), 100.0f, new Lambertian(Color(0.8f, 0.8f, 0.0f)));
 		hittableList[2] = new Sphere(Point3(1.0f, 0.0f, 1.0f), 0.5f, new Metal(Color(0.8f, 0.8f, 0.8f), 0.5f));
@@ -146,7 +153,7 @@ int main() {
 	const auto cameraPtr = cudaUniquePtr<Camera*>(sizeof(Camera*));
 	const auto hittableListPtr = cudaUniquePtr<Hittable*>(5 * sizeof(Hittable*));
 	const auto hittableWorldObjListPtr = cudaUniquePtr<Hittable*>(sizeof(Hittable*));
-	createWorld << <1, 1 >> > (cameraPtr.get(), hittableListPtr.get(), hittableWorldObjListPtr.get());
+	createWorld<<<1, 1>>>(cameraPtr.get(), aspectRatio, hittableListPtr.get(), hittableWorldObjListPtr.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -157,12 +164,12 @@ int main() {
 	const dim3 threadDim(threadBlockWidth, threadBlockHeight);
 
 	// render init
-	renderInit << <blockDim, threadDim >> > (imageWidth, imageHeight, randStateListPtr.get());
+	renderInit<<<blockDim, threadDim>>>(imageWidth, imageHeight, randStateListPtr.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	// render the image into buffer
-	render << <blockDim, threadDim >> > (
+	render<<<blockDim, threadDim>>>(
 		pixelBufferPtr.get(),
 		imageWidth,
 		imageHeight,
@@ -171,7 +178,7 @@ int main() {
 		samplesPerPixel,
 		maxDepth,
 		hittableWorldObjListPtr.get()
-		);
+	);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -201,7 +208,7 @@ int main() {
 	stbi_write_png(fileName.c_str(), imageWidth, imageHeight, channelNum, pixelDataPtr.get(), strideBytes);
 
 	// free world of hittable objects
-	freeWorld << <1, 1 >> > (cameraPtr.get(), hittableListPtr.get(), hittableWorldObjListPtr.get());
+	freeWorld<<<1, 1>>>(cameraPtr.get(), hittableListPtr.get(), hittableWorldObjListPtr.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 

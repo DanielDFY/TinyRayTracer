@@ -147,10 +147,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\include\Camera.cuh" />
-    <ClInclude Include="..\..\..\..\include\helperUtils.h" />
-  </ItemGroup>
-  <ItemGroup>
     <CudaCompile Include="main.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

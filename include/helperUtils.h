@@ -41,6 +41,8 @@ namespace TinyRT {
 		if (err != cudaSuccess) {
 			std::cerr << "CUDA error at: " << file << ":" << line << std::endl;
 			std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
+			// Make sure we call CUDA Device Reset before exiting
+			cudaDeviceReset();
 			exit(EXIT_FAILURE);
 		}
 	}

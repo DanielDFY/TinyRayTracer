@@ -36,6 +36,14 @@
 
 ![](Chapter09/output.png)
 
-### Chapter 09 Positionable Camera
+### Chapter 10 Positionable Camera
 
 ![](Chapter10/output.png)
+
+### Chapter 11 Defocus Blur
+
+![](Chapter11/output.png)
+
+### Chapter 12 Cover Image
+
+![](Chapter12/output.png)
