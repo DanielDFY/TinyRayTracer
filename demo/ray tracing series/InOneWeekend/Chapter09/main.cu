@@ -15,7 +15,7 @@
 #include <HittableList.cuh>
 #include <Material.cuh>
 
-#include <helperUtils.h>
+#include <helperUtils.cuh>
 #include <curand_kernel.h>
 
 using namespace TinyRT;
@@ -80,8 +80,8 @@ __global__ void render(
 	curandState randState = randStateList[idx];
 	Color pixelColor(0.0f, 0.0f, 0.0f);
 	for (size_t s = 0; s < samplesPerPixel; ++s) {
-		const auto u = (static_cast<float>(col) + curand_uniform(&randState)) / static_cast<float>(imageWidth - 1);
-		const auto v = 1.0f - (static_cast<float>(row) + curand_uniform(&randState)) / static_cast<float>(imageHeight - 1);
+		const auto u = (static_cast<float>(col) + randomFloat(&randState)) / static_cast<float>(imageWidth - 1);
+		const auto v = 1.0f - (static_cast<float>(row) + randomFloat(&randState)) / static_cast<float>(imageHeight - 1);
 
 		const Ray r = (*camera)->getRay(u, v);
 
@@ -109,7 +109,9 @@ __global__ void createWorld(Camera** camera, Hittable** hittableList, Hittable**
 __global__ void freeWorld(Camera** camera, Hittable** hittableList, Hittable** hittableWorldObjList) {
 	delete* camera;
 	for (int i = 0; i < 5; ++i) {
-		delete (static_cast<Sphere*>(hittableList[i]))->matPtr();
+		// delete material instances
+		delete hittableList[i]->matPtr();
+		// delete object instances
 		delete hittableList[i];
 	}
 	delete* hittableWorldObjList;

@@ -13,7 +13,7 @@
 #include <Sphere.cuh>
 #include <HittableList.cuh>
 
-#include <helperUtils.h>
+#include <helperUtils.cuh>
 
 using namespace TinyRT;
 

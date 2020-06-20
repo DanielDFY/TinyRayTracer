@@ -19,10 +19,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="..\..\..\..\src\Camera.cu" />
+    <CudaCompile Include="..\..\..\..\src\HittableList.cu" />
+    <CudaCompile Include="..\..\..\..\src\Material.cu" />
+    <CudaCompile Include="..\..\..\..\src\Sphere.cu" />
+    <CudaCompile Include="..\..\..\..\src\Vec3.cu" />
     <CudaCompile Include="main.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
     </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\Camera.cuh" />
+    <ClInclude Include="..\..\..\..\include\Color.cuh" />
+    <ClInclude Include="..\..\..\..\include\helperUtils.cuh" />
+    <ClInclude Include="..\..\..\..\include\Hittable.cuh" />
+    <ClInclude Include="..\..\..\..\include\HittableList.cuh" />
+    <ClInclude Include="..\..\..\..\include\Material.cuh" />
+    <ClInclude Include="..\..\..\..\include\Point3.cuh" />
+    <ClInclude Include="..\..\..\..\include\Ray.cuh" />
+    <ClInclude Include="..\..\..\..\include\Sphere.cuh" />
+    <ClInclude Include="..\..\..\..\include\Vec3.cuh" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -134,6 +151,8 @@
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <AdditionalOptions>-Xcompiler "/wd 4819" %(AdditionalOptions)</AdditionalOptions>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <CodeGeneration>compute_50,sm_50</CodeGeneration>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

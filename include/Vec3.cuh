@@ -3,10 +3,10 @@
 #include <iostream>
 #include <cmath>
 
-#include <helperUtils.h>
-
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
+
+#include <helperUtils.cuh>
 
 namespace TinyRT {
 	class Vec3 {
@@ -52,27 +52,27 @@ namespace TinyRT {
 		}
 
 		__host__ __device__ float length() const {
-			return sqrt(lengthSquared());
+			return sqrtf(lengthSquared());
 		}
 
-		inline static Vec3 random() {
+		static Vec3 random() {
 			return Vec3(randomFloat(), randomFloat(), randomFloat());
 		}
 
-		inline static Vec3 random(float min, float max) {
+		static Vec3 random(float min, float max) {
 			return Vec3(randomFloat(min, max), randomFloat(min, max), randomFloat(min, max));
 		}
 
-		__device__ inline static Vec3 random(curandState* const randStatePtr) {
-			return randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : Vec3(curand_uniform(randStatePtr), curand_uniform(randStatePtr), curand_uniform(randStatePtr));
+		__device__ static Vec3 random(curandState* const randStatePtr) {
+			return randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : Vec3(randomFloat(randStatePtr), randomFloat(randStatePtr), randomFloat(randStatePtr));
 		}
 
-		__device__ inline static Vec3 random(float min, float max, curandState* const randStatePtr) {
+		__device__ static Vec3 random(float min, float max, curandState* const randStatePtr) {
 			return randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : 
 				Vec3(
-				min + (max - min) * curand_uniform(randStatePtr),
-				min + (max - min) * curand_uniform(randStatePtr),
-				min + (max - min) * curand_uniform(randStatePtr)
+				randomFloat(min, max, randStatePtr),
+				randomFloat(min, max, randStatePtr),
+				randomFloat(min, max, randStatePtr)
 			);
 		}
 
@@ -123,73 +123,23 @@ namespace TinyRT {
 		return v / v.length();
 	}
 
-	// bug when add -rdc=true to nvcc and separate into .cu and .cuh, so define in header file
+	Vec3 randomVec3InUnitSphere();
 
-	Vec3 randomVec3InUnitSphere() {
-		while (true) {
-			const Vec3 p = Vec3::random(-1.0f, 1.0f);
-			if (p.lengthSquared() >= 1) continue;
-			return p;
-		}
-	}
+	Vec3 randomUnitVec3();
 
-	Vec3 randomUnitVec3() {
-		const auto a = randomFloat(0.0f, 2 * M_PI);
-		const auto z = randomFloat(-1.0f, 1.0f);
-		const auto r = sqrt(1 - z * z);
-		return { r * cos(a), r * sin(a), z };
-	}
+	Vec3 randomVec3InHemisphere(const Vec3& normal);
 
-	Vec3 randomVec3InHemisphere(const Vec3& normal) {
-		const Vec3 vec3InUnitSphere = randomVec3InUnitSphere();
-		if (dot(vec3InUnitSphere, normal) > 0.0f) // In the same hemisphere as the normal
-			return vec3InUnitSphere;
-		else
-			return -vec3InUnitSphere;
-	}
+	__device__ Vec3 randomVec3InUnitSphere(curandState* randStatePtr);
 
-	__device__ Vec3 randomVec3InUnitSphere(curandState* const randStatePtr) {
-		while (true) {
-			const Vec3 p = randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : Vec3::random(-1.0f, 1.0f, randStatePtr);
-			if (p.lengthSquared() >= 1) continue;
-			return p;
-		}
-	}
+	__device__ Vec3 randomUnitVec3(curandState* randStatePtr);
 
-	__device__ Vec3 randomUnitVec3(curandState* const randStatePtr) {
-		if (randStatePtr == nullptr)
-			return { 0.0f, 0.0f, 0.0f };
-		const auto a = 2.0f * M_PI * curand_uniform(randStatePtr);
-		const auto z = -1.0f + 2.0f * curand_uniform(randStatePtr);
-		const auto r = sqrt(1 - z * z);
-		return { r * cos(a), r * sin(a), z };
-	}
+	__device__ Vec3 randomVec3InHemisphere(const Vec3& normal, curandState* randStatePtr);
 
-	__device__ Vec3 randomVec3InHemisphere(const Vec3& normal, curandState* const randStatePtr) {
-		const Vec3 vec3InUnitSphere = randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : randomVec3InUnitSphere(randStatePtr);
-		if (dot(vec3InUnitSphere, normal) > 0.0f) // In the same hemisphere as the normal
-			return vec3InUnitSphere;
-		else
-			return -vec3InUnitSphere;
-	}
-
-	__device__ Vec3 randomVec3InUnitDisk(curandState* const randStatePtr) {
-		while (true) {
-			const auto v = randStatePtr == nullptr ? Vec3(0.0f, 0.0f, 0.0f) : 
-				Vec3(-1.0f + 1.0f * curand_uniform(randStatePtr), -1.0f + 1.0f * curand_uniform(randStatePtr), 0.0f);
-			if (v.lengthSquared() >= 1.0f) continue;
-			return v;
-		}
-	}
+	__device__ Vec3 randomVec3InUnitDisk(curandState* randStatePtr);
 
 	__host__ __device__ inline Vec3 reflect(const Vec3& v, const Vec3& n) {
 		return v - 2.0f * dot(v, n) * n;
 	}
 
-	__host__ __device__ Vec3 refract(const Vec3& uv, const Vec3& n, float etaOverEtaPrime) {
-		const float cosTheta = dot(-uv, n);
-		const Vec3 rayOutParallel = etaOverEtaPrime * (uv + cosTheta * n);
-		const Vec3 rayOutPerpendicular = -sqrt(1.0f - rayOutParallel.lengthSquared()) * n;
-		return rayOutParallel + rayOutPerpendicular;
-	}
+	__host__ __device__ Vec3 refract(const Vec3& uv, const Vec3& n, float etaOverEtaPrime);
 }

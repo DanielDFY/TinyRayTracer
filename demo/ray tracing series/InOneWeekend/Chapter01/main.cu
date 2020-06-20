@@ -8,7 +8,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include <helperUtils.h>
+#include <helperUtils.cuh>
 
 using namespace TinyRT;
 

@@ -16,7 +16,7 @@
 #include <HittableList.cuh>
 #include <Material.cuh>
 
-#include <helperUtils.h>
+#include <helperUtils.cuh>
 #include <curand_kernel.h>
 
 using namespace TinyRT;
@@ -30,8 +30,8 @@ __device__ void generateRandomScene(Hittable** hittablePtrList, curandState* con
 	hittablePtrList[objIdx++] = new Sphere(Vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(Color(0.5f, 0.5f, 0.5f)));
 	for (int a = -objLoopLimit; a < objLoopLimit; a++) {
 		for (int b = -objLoopLimit; b < objLoopLimit; b++) {
-			const float choose_mat = curand_uniform(objRandStatePtr);
-			Color center(a + curand_uniform(objRandStatePtr), 0.2f, b + curand_uniform(objRandStatePtr));
+			const float choose_mat = randomFloat(objRandStatePtr);
+			const Color center(a + randomFloat(objRandStatePtr), 0.2f, b + randomFloat(objRandStatePtr));
 			const float radius = 0.2f;
 
 			if (choose_mat < 0.7f) {
@@ -43,7 +43,7 @@ __device__ void generateRandomScene(Hittable** hittablePtrList, curandState* con
 			else if (choose_mat < 0.85f) {
 				// metal
 				const auto albedo = Color::random(objRandStatePtr);
-				const auto fuzz = 0.5 * curand_uniform(objRandStatePtr);
+				const auto fuzz = 0.5 * randomFloat(objRandStatePtr);
 				Material* sphereMat = new Metal(albedo, fuzz);
 				hittablePtrList[objIdx++] = new Sphere(center, radius, sphereMat);
 			}
@@ -117,8 +117,8 @@ __global__ void render(
 	curandState randState = pixelRandStateList[idx];
 	Color pixelColor(0.0f, 0.0f, 0.0f);
 	for (size_t s = 0; s < samplesPerPixel; ++s) {
-		const auto u = (static_cast<float>(col) + curand_uniform(&randState)) / static_cast<float>(imageWidth - 1);
-		const auto v = 1.0 - (static_cast<float>(row) + curand_uniform(&randState)) / static_cast<float>(imageHeight - 1);
+		const auto u = (static_cast<float>(col) + randomFloat(&randState)) / static_cast<float>(imageWidth - 1);
+		const auto v = 1.0 - (static_cast<float>(row) + randomFloat(&randState)) / static_cast<float>(imageHeight - 1);
 
 		const Ray r = (*camera)->getRay(u, v, &randState);
 
@@ -159,7 +159,7 @@ __global__ void freeWorld(Camera** camera, Hittable** hittableList, Hittable** h
 	delete* camera;
 	for (int i = 0; i < objNum; ++i) {
 		// delete material instances
-		delete (static_cast<Sphere*>(hittableList[i]))->matPtr();
+		delete hittableList[i]->matPtr();
 		// delete object instances
 		delete hittableList[i];
 	}

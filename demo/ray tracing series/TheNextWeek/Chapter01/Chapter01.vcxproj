@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{8a943224-3969-4542-a5db-5697adfc147b}</ProjectGuid>
-    <RootNamespace>Chapter11</RootNamespace>
+    <ProjectGuid>{d0cffeac-ab5a-4e06-a58a-14ffc681dd64}</ProjectGuid>
+    <RootNamespace>Chapter01</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -73,6 +73,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -95,7 +97,15 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CudaCompile>
+      <GenerateRelocatableDeviceCode>false</GenerateRelocatableDeviceCode>
+    </CudaCompile>
+    <CudaCompile>
+      <TargetMachinePlatform>32</TargetMachinePlatform>
+      <CodeGeneration>compute_30,sm_30</CodeGeneration>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -126,10 +136,12 @@
       <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CudaCompile>
-      <TargetMachinePlatform>64</TargetMachinePlatform>
-      <AdditionalOptions>-Xcompiler "/wd 4819" %(AdditionalOptions)</AdditionalOptions>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+    </CudaCompile>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
       <CodeGeneration>compute_50,sm_50</CodeGeneration>
+      <AdditionalOptions>-Xcompiler "/wd 4819" %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -149,24 +161,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CudaCompile Include="..\..\..\..\src\Camera.cu" />
-    <CudaCompile Include="..\..\..\..\src\HittableList.cu" />
-    <CudaCompile Include="..\..\..\..\src\Material.cu" />
-    <CudaCompile Include="..\..\..\..\src\Sphere.cu" />
-    <CudaCompile Include="..\..\..\..\src\Vec3.cu" />
-    <CudaCompile Include="main.cu" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\..\..\..\include\Camera.cuh" />
     <ClInclude Include="..\..\..\..\include\Color.cuh" />
     <ClInclude Include="..\..\..\..\include\helperUtils.cuh" />
     <ClInclude Include="..\..\..\..\include\Hittable.cuh" />
     <ClInclude Include="..\..\..\..\include\HittableList.cuh" />
     <ClInclude Include="..\..\..\..\include\Material.cuh" />
+    <ClInclude Include="..\..\..\..\include\MovingSphere.cuh" />
     <ClInclude Include="..\..\..\..\include\Point3.cuh" />
     <ClInclude Include="..\..\..\..\include\Ray.cuh" />
     <ClInclude Include="..\..\..\..\include\Sphere.cuh" />
     <ClInclude Include="..\..\..\..\include\Vec3.cuh" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\..\..\src\Camera.cu" />
+    <CudaCompile Include="..\..\..\..\src\HittableList.cu" />
+    <CudaCompile Include="..\..\..\..\src\Material.cu" />
+    <CudaCompile Include="..\..\..\..\src\MovingSphere.cu" />
+    <CudaCompile Include="..\..\..\..\src\Sphere.cu" />
+    <CudaCompile Include="..\..\..\..\src\Vec3.cu" />
+    <CudaCompile Include="main.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

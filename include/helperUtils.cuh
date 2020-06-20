@@ -27,6 +27,14 @@ namespace TinyRT {
 		return min + (max - min) * randomFloat();
 	}
 
+	__device__ inline float randomFloat(curandState* randStatePtr) {
+		return curand_uniform(randStatePtr);
+	}
+
+	__device__ inline float randomFloat(float min, float max, curandState* randStatePtr) {
+		return min + (max - min) * randomFloat(randStatePtr);
+	}
+
 	inline float clamp(float x, float min, float max) {
 		if (x < min) return min;
 		if (x > max) return max;

@@ -13,10 +13,66 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="TinyRT Core">
+      <UniqueIdentifier>{43959181-fc1b-4a18-9f29-9d61079b406e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TinyRT Core\include">
+      <UniqueIdentifier>{e72dae03-fc90-4d16-a6ee-1012c85aa9a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TinyRT Core\src">
+      <UniqueIdentifier>{4522f05a-dd90-4277-a066-d8c21f62ac5e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="main.cu">
       <Filter>源文件</Filter>
     </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\HittableList.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Sphere.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Vec3.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Camera.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Material.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\Camera.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Color.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\helperUtils.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Hittable.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\HittableList.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Material.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Point3.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Ray.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Sphere.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Vec3.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

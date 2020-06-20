@@ -11,7 +11,7 @@
 #include <Color.cuh>
 #include <Ray.cuh>
 
-#include <helperUtils.h>
+#include <helperUtils.cuh>
 
 using namespace TinyRT;
 

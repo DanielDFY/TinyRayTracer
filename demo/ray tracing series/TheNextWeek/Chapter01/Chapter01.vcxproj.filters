@@ -14,34 +14,14 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="TinyRT Core">
-      <UniqueIdentifier>{0d92f8aa-0b30-451c-a287-c0026030f7ee}</UniqueIdentifier>
+      <UniqueIdentifier>{031d4479-b54a-45f5-8fd9-4dd26316e23c}</UniqueIdentifier>
     </Filter>
     <Filter Include="TinyRT Core\include">
-      <UniqueIdentifier>{f137e17a-1d81-4ba3-859d-7402d58f0f9f}</UniqueIdentifier>
+      <UniqueIdentifier>{87008336-9424-4388-adf5-f938ffdd8d1e}</UniqueIdentifier>
     </Filter>
     <Filter Include="TinyRT Core\src">
-      <UniqueIdentifier>{f8710c7f-c0ec-4696-a8ad-30686f28fecc}</UniqueIdentifier>
+      <UniqueIdentifier>{12ff7f9e-2982-4f38-87fa-d6c607e9d345}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="main.cu">
-      <Filter>源文件</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\..\..\src\HittableList.cu">
-      <Filter>TinyRT Core\src</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\..\..\src\Sphere.cu">
-      <Filter>TinyRT Core\src</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\..\..\src\Vec3.cu">
-      <Filter>TinyRT Core\src</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\..\..\src\Camera.cu">
-      <Filter>TinyRT Core\src</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\..\..\src\Material.cu">
-      <Filter>TinyRT Core\src</Filter>
-    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\Camera.cuh">
@@ -74,5 +54,31 @@
     <ClInclude Include="..\..\..\..\include\Vec3.cuh">
       <Filter>TinyRT Core\include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\MovingSphere.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\..\..\src\Camera.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\HittableList.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Material.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Sphere.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Vec3.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="main.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\MovingSphere.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

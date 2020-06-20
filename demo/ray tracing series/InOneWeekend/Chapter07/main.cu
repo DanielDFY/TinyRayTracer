@@ -14,7 +14,7 @@
 #include <Sphere.cuh>
 #include <HittableList.cuh>
 
-#include <helperUtils.h>
+#include <helperUtils.cuh>
 #include <curand_kernel.h>
 
 using namespace TinyRT;
@@ -72,8 +72,8 @@ __global__ void render(
 	curandState randState = randStateList[idx];
 	Color pixelColor(0.0f, 0.0f, 0.0f);
 	for (size_t s = 0; s < samplesPerPixel; ++s) {
-		const auto u = (static_cast<float>(col) + curand_uniform(&randState)) / static_cast<float>(imageWidth - 1);
-		const auto v = 1.0 - (static_cast<float>(row) + curand_uniform(&randState)) / static_cast<float>(imageHeight - 1);
+		const auto u = (static_cast<float>(col) + randomFloat(&randState)) / static_cast<float>(imageWidth - 1);
+		const auto v = 1.0 - (static_cast<float>(row) + randomFloat(&randState)) / static_cast<float>(imageHeight - 1);
 
 		const Ray r = (*camera)->getRay(u, v);
 

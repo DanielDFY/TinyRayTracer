@@ -9,8 +9,7 @@
 #include <device_launch_parameters.h>
 
 #include <Color.cuh>
-
-#include <helperUtils.h>
+#include <helperUtils.cuh>
 
 using namespace TinyRT;
 
