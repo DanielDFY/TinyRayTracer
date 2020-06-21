@@ -18,6 +18,8 @@ namespace TinyRT {
 		__host__ __device__ float y() const { return _elem[1]; }
 		__host__ __device__ float z() const { return _elem[2]; }
 
+		__host__ __device__ float elem(size_t i) const { return _elem[i]; }
+
 		__host__ __device__ Vec3 operator-() const { return { -_elem[0], -_elem[1], -_elem[2] }; }
 		__host__ __device__ float operator[](int i) const { return _elem[i]; }
 		__host__ __device__ float& operator[](int i) { return _elem[i]; }

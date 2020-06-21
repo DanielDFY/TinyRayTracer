@@ -17,6 +17,7 @@ namespace TinyRT {
 		    _time0(time0), _time1(time1), _radius(radius) { }
 
 		__device__ bool hit(const Ray& r, float tMin, float tMax, HitRecord& rec) const override;
+		__device__ bool boundingBox(float time0, float time1, AABB& outputBox) const override;
 
 		__device__ Point3 center(float time) const {
 			return _center0 + (time - _time0) / (_time1 - _time0) * (_center1 - _center0);

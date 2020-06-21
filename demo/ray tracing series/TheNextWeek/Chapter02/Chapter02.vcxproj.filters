@@ -14,13 +14,13 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="TinyRT Core">
-      <UniqueIdentifier>{031d4479-b54a-45f5-8fd9-4dd26316e23c}</UniqueIdentifier>
+      <UniqueIdentifier>{52694a17-4265-446c-ad23-bb1d80962a1b}</UniqueIdentifier>
     </Filter>
     <Filter Include="TinyRT Core\include">
-      <UniqueIdentifier>{87008336-9424-4388-adf5-f938ffdd8d1e}</UniqueIdentifier>
+      <UniqueIdentifier>{f27a60e0-371a-434d-bc92-ee7aa12c48f3}</UniqueIdentifier>
     </Filter>
     <Filter Include="TinyRT Core\src">
-      <UniqueIdentifier>{12ff7f9e-2982-4f38-87fa-d6c607e9d345}</UniqueIdentifier>
+      <UniqueIdentifier>{7df6e56c-7d1d-4a4e-b93b-62cb4840ca35}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -80,11 +80,11 @@
     <CudaCompile Include="..\..\..\..\src\Vec3.cu">
       <Filter>TinyRT Core\src</Filter>
     </CudaCompile>
-    <CudaCompile Include="main.cu">
-      <Filter>源文件</Filter>
-    </CudaCompile>
     <CudaCompile Include="..\..\..\..\src\MovingSphere.cu">
       <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="main.cu">
+      <Filter>源文件</Filter>
     </CudaCompile>
     <CudaCompile Include="..\..\..\..\src\AABB.cu">
       <Filter>TinyRT Core\src</Filter>

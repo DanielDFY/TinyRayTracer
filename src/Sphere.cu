@@ -31,4 +31,16 @@ namespace TinyRT {
 		}
 		return false;
 	}
+
+	__device__ bool Sphere::boundingBox(float time0, float time1, AABB& outputBox) const {
+		const Vec3 halfVec(_radius, _radius, _radius);
+
+		outputBox = AABB(
+			_center - halfVec,
+			_center + halfVec
+		);
+
+		return true;
+	}
+
 }

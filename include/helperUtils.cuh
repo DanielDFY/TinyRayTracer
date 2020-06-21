@@ -27,12 +27,22 @@ namespace TinyRT {
 		return min + (max - min) * randomFloat();
 	}
 
+	inline int randomInt(int min, int max) {
+		// Returns a random integer in [min,max].
+		return static_cast<int>(randomFloat(static_cast<float>(min), static_cast<float>(max) + 1.0f));
+	}
+
 	__device__ inline float randomFloat(curandState* randStatePtr) {
 		return curand_uniform(randStatePtr);
 	}
 
 	__device__ inline float randomFloat(float min, float max, curandState* randStatePtr) {
 		return min + (max - min) * randomFloat(randStatePtr);
+	}
+
+	__device__ inline int randomInt(int min, int max, curandState* randStatePtr) {
+		// Returns a random integer in [min,max].
+		return static_cast<int>(randomFloat(min, max + 1.0f, randStatePtr));
 	}
 
 	inline float clamp(float x, float min, float max) {

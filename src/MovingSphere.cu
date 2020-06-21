@@ -34,4 +34,21 @@ namespace TinyRT {
 		}
 		return false;
 	}
+
+	__device__ bool MovingSphere::boundingBox(float time0, float time1, AABB& outputBox) const {
+		const Vec3 halfVec(_radius, _radius, _radius);
+
+		const AABB box0(
+			center(time0) - halfVec,
+			center(time0) + halfVec
+		);
+
+		const AABB box1(
+			center(time1) - halfVec,
+			center(time1) + halfVec
+		);
+		outputBox = surroundingBox(box0, box1);
+		return true;
+	}
+
 }
