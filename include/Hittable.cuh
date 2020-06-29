@@ -11,7 +11,9 @@ namespace TinyRT {
 		Point3 point;
 		Vec3 normal;
 		Material* matPtr;
-		double t;
+		float t;
+		float u;
+		float v;
 		bool isFrontFace;
 
 		__device__ void setFaceNormal(const Ray& r, const Vec3& outwardNormal) {

@@ -16,6 +16,7 @@ namespace TinyRT {
 				rec.point = r.at(t);
 				const Vec3 outwardNormal = (rec.point - _center) / _radius;
 				rec.setFaceNormal(r, outwardNormal);
+				getSphereUV((rec.point - _center) / _radius, rec.u, rec.v);
 				rec.matPtr = _matPtr;
 				return true;
 			}
@@ -25,6 +26,7 @@ namespace TinyRT {
 				rec.point = r.at(t);
 				const Vec3 outwardNormal = (rec.point - _center) / _radius;
 				rec.setFaceNormal(r, outwardNormal);
+				getSphereUV((rec.point - _center) / _radius, rec.u, rec.v);
 				rec.matPtr = _matPtr;
 				return true;
 			}

@@ -3,30 +3,28 @@
 #include <Ray.cuh>
 #include <Hittable.cuh>
 #include <Color.cuh>
+#include <Texture.cuh>
 
 namespace TinyRT {
 	__device__ float schlick(float cos, float refIdx);
 	
 	class Material {
 	public:
-		__device__ Material() {};
-		__device__ Material(const Material&) {};
-		__device__ Material(Material&&) noexcept {};
-		__device__ Material& operator=(const Material&) { return *this; };
-		__device__ Material& operator=(Material&&) noexcept { return *this; };
-		__device__ virtual ~Material() {};
+		__device__ Material(Texture* texturePtr = nullptr) : _texturePtr(texturePtr) {}
+
+		__device__ Texture* texturePtr() const { return _texturePtr; }
 
 		__device__ virtual bool scatter(const Ray& rayIn, const HitRecord& rec, Vec3& attenuation, Ray& scattered, curandState* randStatePtr) const = 0;
+
+	protected:
+		Texture* _texturePtr;
 	};
 
 	class Lambertian : public Material {
 	public:
-		__device__ Lambertian(const Color& albedo) : _albedo(albedo) {}
+		__device__ Lambertian(Texture* texturePtr) : Material(texturePtr) {}
 
 		__device__ bool scatter(const Ray& rayIn, const HitRecord& rec, Vec3& attenuation, Ray& scattered, curandState* randStatePtr) const override;
-
-	private:
-		Color _albedo;
 	};
 
 	class Metal : public Material {

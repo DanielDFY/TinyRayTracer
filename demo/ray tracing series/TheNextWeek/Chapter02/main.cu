@@ -29,7 +29,7 @@ constexpr int objNum = (2 * objLoopLimit * 2 * objLoopLimit) + 1 + 3;
 __device__ void generateRandomScene(float time0, float time1, curandState* const objRandStatePtr, Hittable** hittablePtrList, BVHHittableData* bvhHittableDataList) {
 	size_t objIdx = 0;
 
-	Hittable* const groundPtr = new Sphere(Vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(Color(0.5f, 0.5f, 0.5f)));
+	Hittable* const groundPtr = new Sphere(Vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(new SolidColor(Color(0.5f, 0.5f, 0.5f))));
 	// collect data for building BVH tree
 	if (!groundPtr->boundingBox(time0, time1, bvhHittableDataList[objIdx].boundingBox))
 		printf("No bounding box for object ground sphere.");
@@ -45,7 +45,7 @@ __device__ void generateRandomScene(float time0, float time1, curandState* const
 			if (choose_mat < 0.7f) {
 				// diffuse
 				const auto albedo = Color::random(objRandStatePtr);
-				Material* sphereMat = new Lambertian(albedo);
+				Material* sphereMat = new Lambertian(new SolidColor(albedo));
 				const Point3 centerMoved = center + Vec3(0.0f, randomFloat(0.0f, 0.5f, objRandStatePtr), 0.0f);
 				Hittable* const objectPtr = new MovingSphere(center, centerMoved, time0, time1, radius, sphereMat);
 				// collect data for building BVH tree
@@ -86,7 +86,7 @@ __device__ void generateRandomScene(float time0, float time1, curandState* const
 	bvhHittableDataList[objIdx].hittableIdx = objIdx;
 	hittablePtrList[objIdx++] = largeDielectricPtr;
 	
-	Hittable* const largeLambertianPtr = new Sphere(Point3(-4.0f, 1.0f, 0.0f), 1.0f, new Lambertian(Color(0.4f, 0.2f, 0.1f)));
+	Hittable* const largeLambertianPtr = new Sphere(Point3(-4.0f, 1.0f, 0.0f), 1.0f, new Lambertian(new SolidColor(Color(0.4f, 0.2f, 0.1f))));
 	// collect data for building BVH tree
 	if (!largeLambertianPtr->boundingBox(time0, time1, bvhHittableDataList[objIdx].boundingBox))
 		printf("No bounding box for object large lambertian sphere.");
@@ -227,7 +227,9 @@ __global__ void render(
 __global__ void freeWorld(Camera** camera, Hittable** hittablePtrList, size_t hittableNum, Hittable** bvhTree, size_t bvhNodeNum, Hittable** hittableListPtr) {
 	delete *camera;
 	for (size_t i = 0; i < hittableNum; ++i) {
-		// delete material instances
+		// delete random texture instances
+		delete hittablePtrList[i]->matPtr()->texturePtr();
+		// delete random material instances
 		delete hittablePtrList[i]->matPtr();
 		// delete object instances
 		delete hittablePtrList[i];
@@ -254,8 +256,8 @@ int main() {
 	const std::string fileName("output.png");
 
 	/* thread block config */
-	constexpr int threadBlockWidth = 8;
-	constexpr int threadBlockHeight = 8;
+	constexpr int threadBlockWidth = 16;
+	constexpr int threadBlockHeight = 16;
 
 	// preparation
 	constexpr int channelNum = 3; // rgb
@@ -286,8 +288,8 @@ int main() {
 
 	// build BVH tree
 	
-	// In the BVH tree, number of nodes is at most (2 * number of objects - 1)
-	const auto bvhNodeDataListPtr = cudaManagedUniquePtr<BVHNodeData>((2 * objNum - 1) * sizeof(BVHNodeData));
+	// In the BVH tree, number of nodes is at most (4 * number of objects - 1)
+	const auto bvhNodeDataListPtr = cudaManagedUniquePtr<BVHNodeData>((4 * objNum - 1) * sizeof(BVHNodeData));
 	const size_t bvhNodeNum = prepareBVHNodeData(bvhHittableDataListPtr.get(), objNum, bvhNodeDataListPtr.get());
 
 	const auto bvhTreePtr = cudaUniquePtr<Hittable*>(bvhNodeNum * sizeof(Hittable*));

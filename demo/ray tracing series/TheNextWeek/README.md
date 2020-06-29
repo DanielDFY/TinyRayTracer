@@ -6,4 +6,12 @@
 
 ### Chapter 02 Bounding Volume Hierarchies
 
-unknown bug exists 
+
+
+### Chapter 03 Solid Textures
+
+![Chapter03](Chapter03/output.png)
+
+### Chapter 04 Perlin Noise
+
+![Chapter04](Chapter04/output.png)

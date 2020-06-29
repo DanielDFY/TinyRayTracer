@@ -10,7 +10,7 @@ namespace TinyRT {
 	__device__ bool Lambertian::scatter(const Ray& rayIn, const HitRecord& rec, Vec3& attenuation, Ray& scattered, curandState* const randStatePtr) const {
 		const Vec3 scatterDirection = rec.normal + randomUnitVec3(randStatePtr);
 		scattered = Ray(rec.point, scatterDirection, rayIn.time());
-		attenuation = _albedo;
+		attenuation = _texturePtr->value(rec.u, rec.v, rec.point);
 		return true;
 	}
 

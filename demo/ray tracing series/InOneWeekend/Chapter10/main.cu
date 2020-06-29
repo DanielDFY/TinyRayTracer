@@ -97,8 +97,8 @@ __global__ void render(
 __global__ void createWorld(Camera** camera, float aspectRatio, Hittable** hittableList, Hittable** hittableWorldObjList) {
 	if (threadIdx.x == 0 && blockIdx.x == 0) {
 		*camera = new Camera(Point3(-2, 2, -1), Point3(0, 0, 1), Vec3(0, 1, 0), 20, aspectRatio);
-		hittableList[0] = new Sphere(Point3(0.0f, 0.0f, 1.0f), 0.5f, new Lambertian(Color(0.1f, 0.2f, 0.5f)));
-		hittableList[1] = new Sphere(Point3(0.0f, -100.5f, 1.0f), 100.0f, new Lambertian(Color(0.8f, 0.8f, 0.0f)));
+		hittableList[0] = new Sphere(Point3(0.0f, 0.0f, 1.0f), 0.5f, new Lambertian(new SolidColor(Color(0.1f, 0.2f, 0.5f))));
+		hittableList[1] = new Sphere(Point3(0.0f, -100.5f, 1.0f), 100.0f, new Lambertian(new SolidColor(Color(0.8f, 0.8f, 0.0f))));
 		hittableList[2] = new Sphere(Point3(1.0f, 0.0f, 1.0f), 0.5f, new Metal(Color(0.8f, 0.8f, 0.8f), 0.5f));
 		hittableList[3] = new Sphere(Point3(-1.0f, 0.0f, 1.0f), 0.5f, new Dielectric(1.5f));
 		hittableList[4] = new Sphere(Point3(-1.0f, 0.0f, 1.0f), -0.45f, new Dielectric(1.5f));
@@ -106,13 +106,15 @@ __global__ void createWorld(Camera** camera, float aspectRatio, Hittable** hitta
 	}
 }
 
-__global__ void freeWorld(Camera** camera, Hittable** hittableList, Hittable** hittableWorldObjList) {
+__global__ void freeWorld(Camera** camera, Hittable** hittablePtrList, Hittable** hittableWorldObjList) {
 	delete* camera;
 	for (int i = 0; i < 5; ++i) {
-		// delete material instances
-		delete hittableList[i]->matPtr();
+		// delete random texture instances
+		delete hittablePtrList[i]->matPtr()->texturePtr();
+		// delete random material instances
+		delete hittablePtrList[i]->matPtr();
 		// delete object instances
-		delete hittableList[i];
+		delete hittablePtrList[i];
 	}
 	delete* hittableWorldObjList;
 }

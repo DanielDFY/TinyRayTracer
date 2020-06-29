@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="TinyRT Core">
+      <UniqueIdentifier>{db129659-6760-4577-b813-c83300b3003b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TinyRT Core\include">
+      <UniqueIdentifier>{213cfc5a-cd09-420c-93fb-31eb326df419}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TinyRT Core\src">
+      <UniqueIdentifier>{527e107e-13ee-4558-8cc3-1621f9bf0078}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\AABB.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\BVH.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Camera.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Color.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\helperUtils.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Hittable.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\HittableList.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Material.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\MovingSphere.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Point3.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Ray.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Sphere.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Vec3.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Texture.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\..\..\src\AABB.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\BVH.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Camera.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\HittableList.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Material.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\MovingSphere.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Sphere.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Vec3.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="main.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Texture.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+  </ItemGroup>
+</Project>

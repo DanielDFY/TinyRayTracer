@@ -15,6 +15,7 @@
 #include <Sphere.cuh>
 #include <HittableList.cuh>
 #include <Material.cuh>
+#include <MovingSphere.cuh>
 
 #include <helperUtils.cuh>
 #include <curand_kernel.h>
@@ -24,10 +25,16 @@ using namespace TinyRT;
 constexpr int objLoopLimit = 11;
 constexpr int objNum = (2 * objLoopLimit * 2 * objLoopLimit) + 1 + 3;
 
+__device__ void generateRandomScene(Hittable** hittablePtrList, curandState* const objRandStatePtr, Texture** extraTexturePtrList) {
+	size_t objIdx = 0;
+	size_t textureIdx = 0;
 
-__device__ void generateRandomScene(Hittable** hittablePtrList, curandState* const objRandStatePtr) {
-	int objIdx = 0;
-	hittablePtrList[objIdx++] = new Sphere(Vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(new SolidColor(Color(0.5f, 0.5f, 0.5f))));
+	Texture* oddTexture = new SolidColor(0.2f, 0.3f, 0.1f);
+	Texture* evenTexture = new SolidColor(0.9f, 0.9f, 0.9f);
+	extraTexturePtrList[textureIdx++] = oddTexture;
+	extraTexturePtrList[textureIdx] = evenTexture;
+	
+	hittablePtrList[objIdx++] = new Sphere(Vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(new CheckerTexture(oddTexture, evenTexture)));
 	for (int a = -objLoopLimit; a < objLoopLimit; a++) {
 		for (int b = -objLoopLimit; b < objLoopLimit; b++) {
 			const float choose_mat = randomFloat(objRandStatePtr);
@@ -38,12 +45,15 @@ __device__ void generateRandomScene(Hittable** hittablePtrList, curandState* con
 				// diffuse
 				const auto albedo = Color::random(objRandStatePtr);
 				Material* sphereMat = new Lambertian(new SolidColor(albedo));
-				hittablePtrList[objIdx++] = new Sphere(center, radius, sphereMat);
+				const Point3 centerMoved = center + Vec3(0.0f, randomFloat(0.0f, 0.5f, objRandStatePtr), 0.0f);
+				const float time0 = 0.0f;
+				const float time1 = 1.0f;
+				hittablePtrList[objIdx++] = new MovingSphere(center, centerMoved, time0, time1, radius, sphereMat);
 			}
 			else if (choose_mat < 0.85f) {
 				// metal
 				const auto albedo = Color::random(objRandStatePtr);
-				const auto fuzz = 0.5 * randomFloat(objRandStatePtr);
+				const auto fuzz = 0.5f * randomFloat(objRandStatePtr);
 				Material* sphereMat = new Metal(albedo, fuzz);
 				hittablePtrList[objIdx++] = new Sphere(center, radius, sphereMat);
 			}
@@ -138,7 +148,7 @@ __global__ void createInit(curandState* const randStatePtr, unsigned int seed) {
 	}
 }
 
-__global__ void createWorld(Camera** camera, float aspectRatio, Hittable** hittablePtrList, Hittable** hittableWorldObjListPtr, curandState* objRandStatePtr) {
+__global__ void createWorld(Camera** camera, float aspectRatio, Hittable** hittablePtrList, Hittable** hittableWorldObjListPtr, curandState* objRandStatePtr, Texture** extraTexturePtrList) {
 	if (threadIdx.x == 0 && blockIdx.x == 0) {
 		const Point3 lookFrom(13.0f, 2.0f, -3.0f);
 		const Point3 lookAt(0.0f, 0.0f, 0.0f);
@@ -146,35 +156,43 @@ __global__ void createWorld(Camera** camera, float aspectRatio, Hittable** hitta
 		const float vFov = 25.0f;
 		const float aperture = 0.1f;
 		const float distToFocus = 10.0f;
+		const float time0 = 0.0f;
+		const float time1 = 1.0f;
 		
-		*camera = new Camera(lookFrom, lookAt, vUp, vFov, aspectRatio, aperture, distToFocus);
+		*camera = new Camera(lookFrom, lookAt, vUp, vFov, aspectRatio, aperture, distToFocus, time0, time1);
 
-		generateRandomScene(hittablePtrList, objRandStatePtr);
+		generateRandomScene(hittablePtrList, objRandStatePtr, extraTexturePtrList);
 
 		*hittableWorldObjListPtr = new HittableList(hittablePtrList, objNum);
 	}
 }
 
-__global__ void freeWorld(Camera** camera, Hittable** hittablePtrList, Hittable** hittableWorldObjList) {
+__global__ void freeWorld(Camera** camera, Hittable** hittableList, size_t hittableNum, Hittable** hittableWorldObjList, Texture** extraTexturePtrList, size_t extraTexturePtrNum) {
 	delete* camera;
-	for (int i = 0; i < objNum; ++i) {
+	for (int i = 0; i < hittableNum; ++i) {
 		// delete random texture instances
-		delete hittablePtrList[i]->matPtr()->texturePtr();
+		delete hittableList[i]->matPtr()->texturePtr();
 		// delete random material instances
-		delete hittablePtrList[i]->matPtr();
+		delete hittableList[i]->matPtr();
 		// delete object instances
-		delete hittablePtrList[i];
+		delete hittableList[i];
 	}
+
+	for (int i = 0; i < extraTexturePtrNum; ++i) {
+		// delete extra texture instances
+		delete extraTexturePtrList[i];
+	}
+	
 	delete* hittableWorldObjList;
 }
 
 int main() {
 	/* image config */
 	constexpr float aspectRatio = 16.0f / 9.0f;
-	constexpr int imageWidth = 1200;
+	constexpr int imageWidth = 800;
 	constexpr int imageHeight = static_cast<int>(imageWidth / aspectRatio);
-	constexpr int samplesPerPixel = 80;
-	constexpr int maxDepth = 40;
+	constexpr int samplesPerPixel = 20;
+	constexpr int maxDepth = 5;
 
 	/* image output file */
 	const std::string fileName("output.png");
@@ -202,11 +220,14 @@ int main() {
 	const auto hittablePtrList = cudaUniquePtr<Hittable*>(objNum * sizeof(Hittable*));
 	const auto hittableWorldObjListPtr = cudaUniquePtr<Hittable*>(sizeof(Hittable*));
 
+	constexpr size_t extraTexturePtrNum = 2;
+	const auto extraTexturePtrList = cudaUniquePtr<Texture*>(extraTexturePtrNum * sizeof(Texture*));
+
 	createInit<<<1, 1>>>(objRandStatePtr.get(), seed);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
-	createWorld<<<1, 1>>>(cameraPtr.get(), aspectRatio, hittablePtrList.get(), hittableWorldObjListPtr.get(), objRandStatePtr.get());
+	createWorld<<<1, 1>>>(cameraPtr.get(), aspectRatio, hittablePtrList.get(), hittableWorldObjListPtr.get(), objRandStatePtr.get(), extraTexturePtrList.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -261,7 +282,7 @@ int main() {
 	stbi_write_png(fileName.c_str(), imageWidth, imageHeight, channelNum, pixelDataPtr.get(), strideBytes);
 
 	// free world of hittable objects
-	freeWorld<<<1, 1>>>(cameraPtr.get(), hittablePtrList.get(), hittableWorldObjListPtr.get());
+	freeWorld<<<1, 1>>>(cameraPtr.get(), hittablePtrList.get(), objNum, hittableWorldObjListPtr.get(), extraTexturePtrList.get(), extraTexturePtrNum);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
