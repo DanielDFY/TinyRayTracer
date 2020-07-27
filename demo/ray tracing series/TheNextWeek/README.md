@@ -1,4 +1,4 @@
-# Ray Tracing in One Weekend
+# Ray Tracing The Next Week
 
 ### Chapter 01 Motion Blur
 
