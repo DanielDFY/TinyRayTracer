@@ -50,4 +50,19 @@ namespace TinyRT {
 		Perlin _noise;
 		float _scale;
 	};
+
+	class ImageTexture : public Texture {
+	public:
+		constexpr static int bytesPerPixel = 3;
+
+		__device__ ImageTexture() : _textureObject(NULL), _width(0), _height(0) { }
+
+		__device__ ImageTexture(cudaTextureObject_t textureObject, int width, int height) : _textureObject(textureObject), _width(width), _height(height) {}
+
+		__device__ Color value(float u, float v, const Point3& point) const override;
+
+	private:
+		cudaTextureObject_t _textureObject;
+		int _width, _height;
+	};
 }

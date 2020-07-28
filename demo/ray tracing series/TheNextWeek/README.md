@@ -15,3 +15,7 @@
 ### Chapter 04 Perlin Noise
 
 ![Chapter04](Chapter04/output.png)
+
+### Chapter 05 Image Texture
+
+![Chapter05](Chapter05/output.png)

@@ -24,47 +24,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\include\Camera.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Color.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\helperUtils.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Hittable.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\HittableList.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Material.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Point3.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Ray.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Sphere.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Vec3.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\MovingSphere.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\AABB.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\BVH.cuh">
-      <Filter>TinyRT Core\include</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <CudaCompile Include="..\..\..\..\src\Camera.cu">
       <Filter>TinyRT Core\src</Filter>
     </CudaCompile>
@@ -92,5 +51,46 @@
     <CudaCompile Include="..\..\..\..\src\BVH.cu">
       <Filter>TinyRT Core\src</Filter>
     </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\Vec3.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\AABB.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\BVH.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Camera.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Color.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\helperUtils.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Hittable.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\HittableList.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Material.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\MovingSphere.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Point3.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Ray.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Sphere.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

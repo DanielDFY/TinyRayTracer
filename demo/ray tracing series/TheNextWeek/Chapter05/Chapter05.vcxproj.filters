@@ -14,16 +14,22 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="TinyRT Core">
-      <UniqueIdentifier>{031d4479-b54a-45f5-8fd9-4dd26316e23c}</UniqueIdentifier>
+      <UniqueIdentifier>{5f0e8378-3274-4f59-9cc4-d875d658273f}</UniqueIdentifier>
     </Filter>
     <Filter Include="TinyRT Core\include">
-      <UniqueIdentifier>{87008336-9424-4388-adf5-f938ffdd8d1e}</UniqueIdentifier>
+      <UniqueIdentifier>{a4c5878a-46e2-4e8f-84c6-a40670a4b045}</UniqueIdentifier>
     </Filter>
     <Filter Include="TinyRT Core\src">
-      <UniqueIdentifier>{12ff7f9e-2982-4f38-87fa-d6c607e9d345}</UniqueIdentifier>
+      <UniqueIdentifier>{22b4ce39-6958-4647-b2f3-fb19d302ba32}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="..\..\..\..\src\AABB.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\BVH.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
     <CudaCompile Include="..\..\..\..\src\Camera.cu">
       <Filter>TinyRT Core\src</Filter>
     </CudaCompile>
@@ -33,7 +39,16 @@
     <CudaCompile Include="..\..\..\..\src\Material.cu">
       <Filter>TinyRT Core\src</Filter>
     </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\MovingSphere.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Perlin.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
     <CudaCompile Include="..\..\..\..\src\Sphere.cu">
+      <Filter>TinyRT Core\src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Texture.cu">
       <Filter>TinyRT Core\src</Filter>
     </CudaCompile>
     <CudaCompile Include="..\..\..\..\src\Vec3.cu">
@@ -41,15 +56,6 @@
     </CudaCompile>
     <CudaCompile Include="main.cu">
       <Filter>源文件</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\..\..\src\MovingSphere.cu">
-      <Filter>TinyRT Core\src</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\..\..\src\AABB.cu">
-      <Filter>TinyRT Core\src</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\..\..\src\BVH.cu">
-      <Filter>TinyRT Core\src</Filter>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
@@ -80,6 +86,9 @@
     <ClInclude Include="..\..\..\..\include\MovingSphere.cuh">
       <Filter>TinyRT Core\include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Perlin.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\include\Point3.cuh">
       <Filter>TinyRT Core\include</Filter>
     </ClInclude>
@@ -87,6 +96,9 @@
       <Filter>TinyRT Core\include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\Sphere.cuh">
+      <Filter>TinyRT Core\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Texture.cuh">
       <Filter>TinyRT Core\include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\Vec3.cuh">

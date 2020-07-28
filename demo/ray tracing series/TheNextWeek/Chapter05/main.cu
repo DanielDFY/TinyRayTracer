@@ -3,6 +3,9 @@
 #include <ctime>
 #include <chrono>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image_write.h>
 
@@ -21,17 +24,70 @@
 
 using namespace TinyRT;
 
-constexpr int objNum = 2;
+constexpr int objNum = 1;
+constexpr int imageTexNum = 1;
 
-__device__ void twoPerlinSpheres(Hittable** hittablePtrList, curandState* const objRandStatePtr, Texture** extraTexturePtrList) {
+struct TextureData {
+	cudaTextureObject_t textureObject;
+	int width, height;
+	cudaArray* deviceData;
+};
+
+TextureData loadAndInitTexture(const char* fileName) {
+	int width, height, depth;
+	const auto texData = stbi_load(fileName, &width, &height, &depth, 0);
+	const auto pixelNum = width * height;
+	const auto imageSize = pixelNum * depth;
+	float* hostData = new float[imageSize];
+	for (unsigned int layer = 0; layer < 3; layer++)
+		for (auto i = 0; i < pixelNum; i++)
+			hostData[layer * pixelNum + i] = texData[i * 3 + layer] / 255.0f;
+
+	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindFloat);
+
+	cudaArray* deviceData;
+	cudaMalloc3DArray(&deviceData, &channelDesc, make_cudaExtent(width, height, 3), cudaArrayLayered);
+
+	cudaMemcpy3DParms memcpy3DParms = { 0 };
+	memcpy3DParms.srcPos = make_cudaPos(0, 0, 0);
+	memcpy3DParms.dstPos = make_cudaPos(0, 0, 0);
+	memcpy3DParms.srcPtr = make_cudaPitchedPtr(hostData, width * sizeof(float), width, height);
+	memcpy3DParms.dstArray = deviceData;
+	memcpy3DParms.extent = make_cudaExtent(width, height, 3);
+	memcpy3DParms.kind = cudaMemcpyHostToDevice;
+	cudaMemcpy3D(&memcpy3DParms);
+
+	cudaResourceDesc texRes;
+	memset(&texRes, 0, sizeof(cudaResourceDesc));
+	texRes.resType = cudaResourceTypeArray;
+	texRes.res.array.array = deviceData;
+	cudaTextureDesc texDesc;
+	memset(&texDesc, 0, sizeof(cudaTextureDesc));
+	texDesc.filterMode = cudaFilterModeLinear;
+	texDesc.addressMode[0] = cudaAddressModeWrap;
+	texDesc.addressMode[1] = cudaAddressModeWrap;
+	texDesc.addressMode[2] = cudaAddressModeWrap;
+	texDesc.readMode = cudaReadModeElementType;
+	texDesc.normalizedCoords = true;
+
+	cudaTextureObject_t textureObject;
+	cudaCreateTextureObject(&textureObject, &texRes, &texDesc, nullptr);
+
+	return { textureObject, width, height, deviceData };
+}
+
+void cleanTexture(TextureData textureData) {
+	cudaDestroyTextureObject(textureData.textureObject);
+	cudaFreeArray(textureData.deviceData);
+}
+
+__device__ void earth(Hittable** hittablePtrList, curandState* const objRandStatePtr, Texture** texturePtrList, TextureData* textureDataList) {
 	size_t objIdx = 0;
 	size_t textureIdx = 0;
 
-	Texture* pertext = new NoiseTexture(4, objRandStatePtr);
-	extraTexturePtrList[textureIdx] = pertext;
-	
-	hittablePtrList[objIdx++] = new Sphere(Vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(pertext));
-	hittablePtrList[objIdx] = new Sphere(Vec3(0.0f, 2.0f, 0.0f), 2.0f, new Lambertian(pertext));
+	TextureData earthTextureData = textureDataList[textureIdx];
+	texturePtrList[textureIdx] = new ImageTexture(earthTextureData.textureObject, earthTextureData.width, earthTextureData.height);
+	hittablePtrList[objIdx] = new Sphere(Point3(0, 0, 0), 2, new Lambertian(texturePtrList[textureIdx]));
 }
 
 __device__ Color rayColor(const Ray& r, Hittable** hittablePtr, const int maxDepth, curandState* const randStatePtr) {
@@ -113,37 +169,37 @@ __global__ void createInit(curandState* const randStatePtr, unsigned int seed) {
 	}
 }
 
-__global__ void createWorld(Camera** camera, float aspectRatio, Hittable** hittablePtrList, Hittable** hittableWorldObjListPtr, curandState* objRandStatePtr, Texture** extraTexturePtrList) {
+__global__ void createWorld(Camera** camera, float aspectRatio, Hittable** hittablePtrList, Hittable** hittableWorldObjListPtr, curandState* objRandStatePtr, Texture** texturePtrList, TextureData* textureDataList) {
 	if (threadIdx.x == 0 && blockIdx.x == 0) {
 		const Point3 lookFrom(13.0f, 2.0f, -3.0f);
 		const Point3 lookAt(0.0f, 0.0f, 0.0f);
 		const Vec3 vUp(0.0f, 1.0f, 0.0f);
-		const float vFov = 25.0f;
-		const float aperture = 0.1f;
+		const float vFov = 20.0f;
+		const float aperture = 0.0f;
 		const float distToFocus = 10.0f;
 		const float time0 = 0.0f;
 		const float time1 = 1.0f;
 		
 		*camera = new Camera(lookFrom, lookAt, vUp, vFov, aspectRatio, aperture, distToFocus, time0, time1);
 
-		twoPerlinSpheres(hittablePtrList, objRandStatePtr, extraTexturePtrList);
+		earth(hittablePtrList, objRandStatePtr, texturePtrList, textureDataList);
 
 		*hittableWorldObjListPtr = new HittableList(hittablePtrList, objNum);
 	}
 }
 
-__global__ void freeWorld(Camera** camera, Hittable** hittableList, size_t hittableNum, Hittable** hittableWorldObjList, Texture** extraTexturePtrList, size_t extraTexturePtrNum) {
+__global__ void freeWorld(Camera** camera, Hittable** hittableList, size_t hittableNum, Hittable** hittableWorldObjList, Texture** texturePtrList) {
 	delete* camera;
 	for (int i = 0; i < hittableNum; ++i) {
-		// delete random material instances
+		// delete material instances
 		delete hittableList[i]->matPtr();
 		// delete object instances
 		delete hittableList[i];
 	}
 
-	for (int i = 0; i < extraTexturePtrNum; ++i) {
-		// delete extra texture instances
-		delete extraTexturePtrList[i];
+	for (int i = 0; i < imageTexNum; ++i) {
+		// delete texture instances
+		delete texturePtrList[i];
 	}
 	
 	delete* hittableWorldObjList;
@@ -167,30 +223,31 @@ int main() {
 	// preparation
 	constexpr int channelNum = 3; // rgb
 	constexpr int pixelNum = imageWidth * imageHeight;
-	constexpr size_t pixelBufferBytes = pixelNum * sizeof(Color);
-	constexpr size_t randStateListBytes = pixelNum * sizeof(curandState);
 
 	// allocate memory for pixel buffer
-	const auto pixelBufferPtr = cudaManagedUniquePtr<Color>(pixelBufferBytes);
+	const auto pixelBufferPtr = cudaManagedUniquePtr<Color>(pixelNum * sizeof(Color));
 
 	// allocate random state
 	const auto seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
 	const auto objRandStatePtr = cudaUniquePtr<curandState>(sizeof(curandState));
-	const auto pixelRandStateListPtr = cudaUniquePtr<curandState>(randStateListBytes);
+	const auto pixelRandStateListPtr = cudaUniquePtr<curandState>(pixelNum * sizeof(curandState));
 
 	// create world of hittable objects and the camera
 	const auto cameraPtr = cudaUniquePtr<Camera*>(sizeof(Camera*));
 	const auto hittablePtrList = cudaUniquePtr<Hittable*>(objNum * sizeof(Hittable*));
 	const auto hittableWorldObjListPtr = cudaUniquePtr<Hittable*>(sizeof(Hittable*));
 
-	constexpr size_t extraTexturePtrNum = 1;
-	const auto extraTexturePtrList = cudaUniquePtr<Texture*>(extraTexturePtrNum * sizeof(Texture*));
+	const auto texturePtrList = cudaUniquePtr<Texture*>(imageTexNum * sizeof(Texture*));
+	const auto textureDataList = cudaManagedUniquePtr<TextureData>(imageTexNum * sizeof(TextureData));
 
+	// load and initiate earth texture
+	textureDataList.get()[0] = loadAndInitTexture("earthmap.jpg");
+	
 	createInit<<<1, 1>>>(objRandStatePtr.get(), seed);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
-	createWorld<<<1, 1>>>(cameraPtr.get(), aspectRatio, hittablePtrList.get(), hittableWorldObjListPtr.get(), objRandStatePtr.get(), extraTexturePtrList.get());
+	createWorld<<<1, 1>>>(cameraPtr.get(), aspectRatio, hittablePtrList.get(), hittableWorldObjListPtr.get(), objRandStatePtr.get(), texturePtrList.get(), textureDataList.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -244,10 +301,12 @@ int main() {
 	// write pixel data to output file
 	stbi_write_png(fileName.c_str(), imageWidth, imageHeight, channelNum, pixelDataPtr.get(), strideBytes);
 
-	// free world of hittable objects
-	freeWorld<<<1, 1>>>(cameraPtr.get(), hittablePtrList.get(), objNum, hittableWorldObjListPtr.get(), extraTexturePtrList.get(), extraTexturePtrNum);
+	// free resources
+	freeWorld<<<1, 1>>>(cameraPtr.get(), hittablePtrList.get(), objNum, hittableWorldObjListPtr.get(), texturePtrList.get());
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
-
+	
+	//cleanTexture(earthTextureData);
+	
 	return 0;
 }

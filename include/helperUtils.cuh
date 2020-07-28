@@ -45,7 +45,7 @@ namespace TinyRT {
 		return static_cast<int>(randomFloat(min, max + 1.0f, randStatePtr));
 	}
 
-	inline float clamp(float x, float min, float max) {
+	__host__ __device__ inline float clamp(float x, float min, float max) {
 		if (x < min) return min;
 		if (x > max) return max;
 		return x;
