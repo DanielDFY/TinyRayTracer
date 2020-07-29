@@ -1,9 +1,13 @@
 #include <BVH.cuh>
+#include <HittableList.cuh>
+
+#include <device_launch_parameters.h>
 
 namespace TinyRT {
 	void prepareBVHNodeData(BVHHittableData* bvhHittableDataList, size_t start, size_t end, BVHNodeData* bvhNodeDataList, size_t& currentNodeIdx) {
 		BVHNodeData& currentNodeData = bvhNodeDataList[currentNodeIdx];
-		
+
+		// randomly choose an axis for division
 		const int axis = randomInt(0, 2);
 
 		const auto comparator = (axis == 0) ? boxCompareX : (axis == 1) ? boxCompareY : boxCompareZ;
@@ -54,9 +58,34 @@ namespace TinyRT {
 		return currentNodeIdx + 1;
 	}
 
+	__global__ void buildBVHTree(Hittable** hittablePtrList, BVHNodeData* bvhNodeDataList, size_t nodeNum, Hittable** bvhTree, Hittable** hittableListPtr) {
+		if (threadIdx.x == 0 && blockIdx.x == 0) {
+			if (bvhNodeDataList == nullptr || nodeNum == 0)
+				return;
+
+			for (size_t i = 0; i < nodeNum; ++i) {
+				bvhTree[i] = new BVHNode();
+			}
+
+			for (size_t i = 0; i < nodeNum; ++i) {
+				const BVHNodeData& nodeData = bvhNodeDataList[i];
+				BVHNode* const bvhNode = (BVHNode*)bvhTree[i];
+				bvhNode->_isLeaf = nodeData.isLeaf;
+				bvhNode->_boundingBox = nodeData.boundingBox;
+				bvhNode->_leftPtr = nodeData.isLeaf ? hittablePtrList[nodeData.leftIdx] : bvhTree[nodeData.leftIdx];
+				bvhNode->_rightPtr = nodeData.isLeaf ? hittablePtrList[nodeData.rightIdx] : bvhTree[nodeData.rightIdx];
+			}
+			*hittableListPtr = new HittableList(bvhTree, 1);
+		}
+	}
+
 	__device__ bool BVHNode::hit(const Ray& r, float tMin, float tMax, HitRecord& rec) const {
 		if (!_boundingBox.hit(r, tMin, tMax))
 			return false;
+
+		HitRecord tempRec;
+		float closest = tMax;
+		bool isHit = false;
 
 		BVHNode* stack[64];
 		BVHNode** stackPtr = stack;
@@ -65,34 +94,40 @@ namespace TinyRT {
 		auto nodePtr = this;
 		do {
 			if (nodePtr->_isLeaf) {
-				const bool isLeftHit = nodePtr->_leftPtr->hit(r, tMin, tMax, rec);
-				const bool isRightHit = nodePtr->_rightPtr->hit(r, tMin, tMax, rec);
-
-				if (isLeftHit || isRightHit) {
-					return true;
-				} else {
-					nodePtr = *--stackPtr;	// pop
+				const bool isLeftHit = nodePtr->_leftPtr->hit(r, tMin, closest, tempRec);
+				if (isLeftHit) {
+					closest = tempRec.t;
+					rec = tempRec;
+					isHit = true;
 				}
-			} else {
-				BVHNode* nodeLeftPtr = static_cast<BVHNode*>(nodePtr->_leftPtr);
-				BVHNode* nodeRightPtr = static_cast<BVHNode*>(nodePtr->_rightPtr);
+				const bool isRightHit = nodePtr->_rightPtr->hit(r, tMin, closest, tempRec);
+				if (isRightHit) {
+					closest = tempRec.t;
+					rec = tempRec;
+					isHit = true;
+				}
 
-				const bool isLeftHit = nodeLeftPtr->_boundingBox.hit(r, tMin, tMax);
-				const bool isRightHit = nodeRightPtr->_boundingBox.hit(r, tMin, tMax);
+				nodePtr = *--stackPtr;	// pop
+			} else {
+				const auto nodeLeftPtr = (BVHNode*)nodePtr->_leftPtr;
+				const auto nodeRightPtr = (BVHNode*)nodePtr->_rightPtr;
+
+				const bool isLeftHit = nodeLeftPtr->_boundingBox.hit(r, tMin, closest);
+				const bool isRightHit = nodeRightPtr->_boundingBox.hit(r, tMin, closest);
 
 				if (!isLeftHit && !isRightHit) {
 					nodePtr = *--stackPtr;	// pop
 				}
 				else {
-					nodePtr = static_cast<BVHNode*>(isLeftHit ? nodePtr->_leftPtr : nodePtr->_rightPtr);
+					nodePtr = isLeftHit ? nodeLeftPtr : nodeRightPtr;
 					if (isLeftHit && isRightHit) {
-						*stackPtr++ = static_cast<BVHNode*>(nodePtr->_rightPtr);		// push
+						*stackPtr++ = nodeRightPtr;		// push
 					}
 				}
 			}
 		} while (nodePtr != nullptr);
 
-		return false;
+		return isHit;
 	}
 
 	__device__ bool BVHNode::boundingBox(float time0, float time1, AABB& outputBox) const {

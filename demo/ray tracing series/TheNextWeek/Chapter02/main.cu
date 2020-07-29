@@ -101,27 +101,6 @@ __device__ void generateRandomScene(float time0, float time1, curandState* const
 	hittablePtrList[objIdx] = largeMetalPtr;
 }
 
-__global__ void buildBVHTree(Hittable** hittablePtrList, BVHNodeData* bvhNodeDataList, size_t nodeNum, Hittable** bvhTree, Hittable** hittableListPtr) {
-	if (threadIdx.x == 0 && blockIdx.x == 0) {
-		if (bvhNodeDataList == nullptr || nodeNum == 0)
-			return;
-
-		for (size_t i = 0; i < nodeNum; ++i) {
-			bvhTree[i] = new BVHNode();
-		}
-
-		for (size_t i = 0; i < nodeNum; ++i) {
-			const BVHNodeData& nodeData = bvhNodeDataList[i];
-			BVHNode* const bvhNode = static_cast<BVHNode*>(bvhTree[i]);
-			bvhNode->_isLeaf = nodeData.isLeaf;
-			bvhNode->_boundingBox = nodeData.boundingBox;
-			bvhNode->_leftPtr = nodeData.isLeaf ? hittablePtrList[nodeData.leftIdx] : bvhTree[nodeData.leftIdx];
-			bvhNode->_rightPtr = nodeData.isLeaf ? hittablePtrList[nodeData.rightIdx] : bvhTree[nodeData.rightIdx];
-		}
-		*hittableListPtr = new HittableList(bvhTree, 1);
-	}
-}
-
 __device__ Color rayColor(const Ray& r, Hittable** hittablePtr, const int maxDepth, curandState* const randStatePtr) {
 	Ray curRay = r;
 	Vec3 curAttenuation(1.0f, 1.0f, 1.0f);

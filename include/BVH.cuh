@@ -36,6 +36,8 @@ namespace TinyRT {
 	void prepareBVHNodeData(BVHHittableData* bvhHittableDataList, size_t start, size_t end, BVHNodeData* bvhNodeDataList, size_t& currentNodeNum);
 	
 	size_t prepareBVHNodeData(BVHHittableData* bvhHittableDataList, size_t hittableDataListSize, BVHNodeData* bvhNodeDataList);
+
+	__global__ void buildBVHTree(Hittable** hittablePtrList, BVHNodeData* bvhNodeDataList, size_t nodeNum, Hittable** bvhTree, Hittable** hittableListPtr);
 	
 	class BVHNode : public Hittable {
 	public:
