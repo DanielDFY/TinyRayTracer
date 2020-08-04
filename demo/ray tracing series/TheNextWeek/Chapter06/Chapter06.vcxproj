@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{aec5afa9-3641-40eb-9798-637cab8b680f}</ProjectGuid>
-    <RootNamespace>Chapter05</RootNamespace>
+    <ProjectGuid>{76d71a9c-43b8-45a9-a413-7044474ffbfc}</ProjectGuid>
+    <RootNamespace>Chapter06</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -152,18 +152,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\AABB.cuh" />
-    <CudaCompile Include="..\..\..\..\src\AABB.cu" />
-    <CudaCompile Include="..\..\..\..\src\AARect.cu" />
-    <CudaCompile Include="..\..\..\..\src\BVH.cu" />
-    <CudaCompile Include="..\..\..\..\src\Camera.cu" />
-    <CudaCompile Include="..\..\..\..\src\HittableList.cu" />
-    <CudaCompile Include="..\..\..\..\src\Material.cu" />
-    <CudaCompile Include="..\..\..\..\src\MovingSphere.cu" />
-    <CudaCompile Include="..\..\..\..\src\Perlin.cu" />
-    <CudaCompile Include="..\..\..\..\src\Sphere.cu" />
-    <CudaCompile Include="..\..\..\..\src\Texture.cu" />
-    <CudaCompile Include="..\..\..\..\src\Vec3.cu" />
-    <CudaCompile Include="main.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\AARect.cuh" />
@@ -209,7 +197,42 @@
     <ClInclude Include="..\..\..\..\include\Vec3.cuh" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="earthmap.jpg" />
+    <CudaCompile Include="..\..\..\..\src\AABB.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\BVH.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Camera.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\HittableList.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Material.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\MovingSphere.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Perlin.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Sphere.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Texture.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\..\src\Vec3.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\..\..\src\AARect.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="main.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

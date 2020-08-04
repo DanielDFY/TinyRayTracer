@@ -19,3 +19,7 @@
 ### Chapter 05 Image Texture
 
 ![Chapter05](Chapter05/output.png)
+
+### Chapter 06 Rectangles and Lights
+
+![Chapter06](Chapter06/output.png)

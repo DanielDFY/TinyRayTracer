@@ -28,8 +28,7 @@ namespace TinyRT {
 			if (comparator(bvhHittableDataList[start], bvhHittableDataList[second])) {
 				currentNodeData.leftIdx = bvhHittableDataList[start].hittableIdx;
 				currentNodeData.rightIdx = bvhHittableDataList[second].hittableIdx;
-			}
-			else {
+			} else {
 				currentNodeData.leftIdx = bvhHittableDataList[second].hittableIdx;
 				currentNodeData.rightIdx = bvhHittableDataList[start].hittableIdx;
 			}
@@ -117,8 +116,7 @@ namespace TinyRT {
 
 				if (!isLeftHit && !isRightHit) {
 					nodePtr = *--stackPtr;	// pop
-				}
-				else {
+				} else {
 					nodePtr = isLeftHit ? nodeLeftPtr : nodeRightPtr;
 					if (isLeftHit && isRightHit) {
 						*stackPtr++ = nodeRightPtr;		// push
